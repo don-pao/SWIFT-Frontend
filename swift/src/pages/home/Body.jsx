@@ -3,11 +3,13 @@ import axios from 'axios';
 import { Box, Typography, Button, Card, CardContent, CardActions, Chip, IconButton } from '@mui/material';
 import ToDoFormModal from './ToDoFormModal';
 import { Delete, Edit } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 function Body() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [tasks, setTasks] = useState([]); // State to store the list of tasks
   const [selectedTask, setSelectedTask] = useState(null);
+  const navigate = useNavigate();
 
   const handleOpenModal = () => {
     setModalOpen(true);
@@ -142,6 +144,7 @@ function Body() {
         >
           <Button
             variant="contained"
+            onClick={() => navigate('/flashcard-set-form')}
             sx={{
               backgroundColor: '#E1DFE2',
               color: '#757575',
