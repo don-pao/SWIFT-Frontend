@@ -2,9 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/home/Home';
 import Test from './pages/test/Test';
-import FlashcardForm from './pages/home/Flashcard';
-import QuizForm from './pages/home/Quiz';
-import FlashcardSetForm from './pages/home/FlashcardSet';
+import FlashcardForm from './pages/flashcard/Flashcard';
+import QuizForm from './pages/quiz/Quiz';
+import FlashcardSetForm from './pages/flashcardset/FlashcardSet';
 
 function App() {
   return (
