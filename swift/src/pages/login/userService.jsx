@@ -96,6 +96,16 @@ export const userService = {
     return response.data.exists;
   },
 
+  emailExists: async (email) => {
+    try {
+      const response = await api.get(`/exists/email?email=${encodeURIComponent(email)}`);
+      return response.data.exists;
+    } catch (error) {
+      console.error('Email existence check failed:', error.response?.data?.error || 'Error');
+      return false;
+    }
+  },
+
   verifyPassword: async (username, password) => {
     try {
       const response = await api.post('/login', { username, password });

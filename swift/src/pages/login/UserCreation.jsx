@@ -13,21 +13,53 @@ const UserCreation = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false); // State for password visibility
+  const [isEmailValid, setIsEmailValid] = useState(true); // New state for email validation
+
 
   const toggleForm = () => {
     setIsRegistering(!isRegistering);
+  };
+
+  const validatePassword = (password) => {
+    const passwordPattern = /^(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+    return passwordPattern.test(password);
   };
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword); // Toggle password visibility
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = async (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
       ...prevState,
       [name]: value
     }));
+
+    if (name === 'password') {
+      if (!validatePassword(value)) {
+        setError("Password must be at least 8 characters long and contain at least one special character.");
+      } else {
+        setError(""); // Clear error if password is valid
+      }
+    }
+
+    // Check email uniqueness if the email field is changed
+    if (name === 'email' && isRegistering) {
+      try {
+        const emailExists = await userService.emailExists(value);
+        setIsEmailValid(!emailExists);
+        if (emailExists) {
+          setError('Email already in use.');
+        } else {
+          setError(''); // Clear error if email is valid
+        }
+      } catch (err) {
+        console.error('Error checking email uniqueness:', err.message);
+        setError('Could not verify email. Please try again.');
+      }
+    }
+
   };
 
   const handleSubmit = async (e) => {
@@ -37,6 +69,16 @@ const UserCreation = () => {
   
     try {
       if (isRegistering) {
+         // Check email validity before registration
+         if (!isEmailValid) {
+          setError('Please use a different email.');
+          return;
+        }
+        if (!validatePassword(formData.password)) {
+          setError('Password must be at least 8 characters long and contain at least one special character.');
+          return;
+        }
+
         await userService.register({
           username: formData.username,
           email: formData.email,
@@ -53,7 +95,7 @@ const UserCreation = () => {
   
         if (data.token) {
           setSuccess('Login successful!');
-          navigate('/'); // Navigate to profile page after login
+          navigate('/'); // Navigate to home page after login
         } else {
           setError('Login failed. No token provided.');
         }
