@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import ResponsiveAppBar from '../../component/Appbar';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import AvatarTheme from '../../component/Theme';
+import ResponsiveAppBar from './Appbar';
+import AvatarTheme from './Theme';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -122,29 +121,21 @@ function Shop() {
                         {shopItems.map(item => (
                             <Grid item xs={12} sm={6} md={4} key={item.itemId}>
                                 <Box mx={8}> {/* Add horizontal margin */}
-                                <Card sx={{ maxWidth: 345 }}>
-    <CardMedia
-        component="img"
-        alt={item.itemName}
-        height="140"
-        image={`${process.env.PUBLIC_URL}/images/themes/${item.itemUrl}`}
-    />
-    <CardContent sx={{ textAlign: 'center' }}>
-        <Typography gutterBottom variant="h5" component="div">
-            {item.itemName}
-        </Typography>
-        <Box display="flex" justifyContent="center" alignItems="center" sx={{ mt: 1 }}>
-            <Box
-                component="img"
-                src={`${process.env.PUBLIC_URL}/images/themes/coin.jpg`}
-                alt="Coin"
-                sx={{ width: 20, height: 20, marginRight: 0.5 }}
-            />
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {item.itemCost}
-            </Typography>
-        </Box>
-    </CardContent>
+                                    <Card sx={{ maxWidth: 345 }}>
+                                        <CardMedia
+                                            component="img"
+                                            alt={item.itemName}
+                                            height="140"
+                                            image={`${process.env.PUBLIC_URL}/themes/${item.itemUrl}`}
+                                        />
+                                        <CardContent>
+                                            <Typography gutterBottom variant="h5" component="div">
+                                                {item.itemName}
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                                Cost: {item.itemCost}
+                                            </Typography>
+                                        </CardContent>
                                         <CardActions>
                                             <Button size="small" onClick={() => handleEditClick(item)}>Edit</Button>
                                             <Button size="small" onClick={() => handleDeleteClick(item.itemId)}>Delete</Button>
