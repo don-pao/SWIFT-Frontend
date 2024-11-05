@@ -11,30 +11,37 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { Box } from '@mui/material';
 
-function ShopUI() {
-    const [shopItems, setShopItems] = useState([]);
+function InventoryUI() {
+    const [inventoryItems, setInventoryItems] = useState([]);
 
     useEffect(() => {
-        fetchShopItems();
+        fetchInventoryItems();
     }, []);
 
-    const fetchShopItems = async () => {
+    const fetchInventoryItems = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/shop/getAllShop');
+            const response = await axios.get('http://localhost:8080/api/inventory/getAllItems');
             if (Array.isArray(response.data)) {
-                setShopItems(response.data);
+                setInventoryItems(response.data);
             } else {
                 console.error('Expected an array, but got:', response.data);
             }
         } catch (error) {
-            console.error('Error fetching shop items:', error);
+            console.error('Error fetching inventory items:', error);
         }
     };
 
     const handleBuyClick = (item) => {
-        // Logic for handling the purchase of an item
-        console.log(`Buying item: ${item.itemName} with cost: ${item.itemCost}`);
-        // Additional logic to manage the purchase can go here
+        if (item.quantity > 0) {
+            console.log(`Purchasing item: ${item.itemName} with cost: ${item.itemCost}`);
+            // Update the item quantity in the inventory
+            const updatedItems = inventoryItems.map(invItem =>
+                invItem.itemId === item.itemId ? { ...invItem, quantity: invItem.quantity - 1 } : invItem
+            );
+            setInventoryItems(updatedItems);
+        } else {
+            console.log(`Item ${item.itemName} is out of stock`);
+        }
     };
 
     return (
@@ -42,12 +49,11 @@ function ShopUI() {
             <ResponsiveAppBar />
             <AvatarTheme />
             <Box textAlign="center" mt={4} width="100%">
-                <h2>Shop</h2>
+                <h2>Inventory</h2>
                 <div>
-                    
                     <Box sx={{ maxWidth: '100%', mx: 'auto', px: 10 }}>
                         <Grid container spacing={2} justifyContent="center">
-                            {shopItems.map(item => (
+                            {inventoryItems.map(item => (
                                 <Grid item xs={12} sm={6} md={4} key={item.itemId}>
                                     <Box mx={10}>
                                         <Card sx={{ maxWidth: 345 }}>
@@ -72,10 +78,17 @@ function ShopUI() {
                                                         {item.itemCost}
                                                     </Typography>
                                                 </Box>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Quantity: {item.quantity > 0 ? item.quantity : "Out of stock"}
+                                                </Typography>
                                             </CardContent>
                                             <CardActions>
-                                                <Button size="small" onClick={() => handleBuyClick(item)}>
-                                                    Buy
+                                                <Button 
+                                                    size="small" 
+                                                    onClick={() => handleBuyClick(item)}
+                                                    disabled={item.quantity <= 0}
+                                                >
+                                                    {item.quantity > 0 ? "Buy" : "Out of Stock"}
                                                 </Button>
                                             </CardActions>
                                         </Card>
@@ -90,4 +103,4 @@ function ShopUI() {
     );
 }
 
-export default ShopUI;
+export default InventoryUI;
