@@ -42,7 +42,7 @@ function ResponsiveAppBar() {
 
   const handleCloseUserMenu = (setting) => {
     if (setting === 'Profile') {
-      navigate('/profile'); // Navigate to the User Profile page
+      navigate('/user-profile'); // Navigate to the User Profile page
     } else if (setting === 'Logout') {
       // Clear any authentication tokens or session data here
       navigate('/login'); // Redirect to Login page
