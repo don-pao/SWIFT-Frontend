@@ -8,7 +8,9 @@ import Test from './pages/test/Test';
 import FlashcardForm from './pages/flashcard/Flashcard';
 import QuizForm from './pages/quiz/Quiz';
 import FlashcardSetForm from './pages/flashcardset/FlashcardSet';
+import ShopUI from './pages/shop/ShopAdmin';
 import Shop from './pages/shop/Shop';
+import InventoryUI from './pages/shop/Inventory';
 
 
 function App() {
@@ -23,6 +25,8 @@ function App() {
           <Route path="/flashcard-form/:setId" element={<FlashcardForm />} />
           <Route path="/quiz-form/:setId" element={<QuizForm />} />
           <Route path="/shop" element={<Shop />} />
+          <Route path="/shopadmin" element={<ShopUI/>}/>
+          <Route path='/inventory' element={<InventoryUI/>}/>
       </Routes>
     </Router>
   );
