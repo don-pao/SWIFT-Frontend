@@ -53,7 +53,7 @@ const UserCreation = () => {
   
         if (data.token) {
           setSuccess('Login successful!');
-          navigate('/profile'); // Navigate to profile page after login
+          navigate('/'); // Navigate to profile page after login
         } else {
           setError('Login failed. No token provided.');
         }
