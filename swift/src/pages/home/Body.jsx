@@ -40,6 +40,8 @@ function Body() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [editConfirmationDialogOpen, setEditConfirmationDialogOpen] = useState(false);
+  const [questToEdit, setQuestToEdit] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -261,7 +263,7 @@ function Body() {
                           Coins Earned: {quest.coinsEarned}
                         </Typography>
                       </Box>
-                      <IconButton onClick={() => handleOpenDialog(quest)} sx={{ marginLeft: 'auto' }} color="primary">
+                      <IconButton onClick={() => { setEditConfirmationDialogOpen(true); setQuestToEdit(quest); }} sx={{ marginLeft: 'auto' }} color="primary">
                         <EditIcon />
                       </IconButton>
                       <IconButton onClick={() => handleOpenDeleteDialog(quest)} color="error">
@@ -453,7 +455,7 @@ function Body() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color="secondary">
+          <Button onClick={handleCloseDialog} color="error">
             Cancel
           </Button>
           <Button onClick={handleSaveQuest} color="primary">
@@ -464,14 +466,23 @@ function Body() {
 
       {/* Dialog for Deleting a Quest */}
       <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
-        <DialogTitle>Are you sure to delete this daily quest?</DialogTitle>
+        <DialogTitle>Are you sure you want to delete this record?</DialogTitle>
         <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="secondary">
+          <Button onClick={handleCloseDeleteDialog} color="error">
             No
           </Button>
-          <Button onClick={handleDeleteQuest} color="error">
+          <Button onClick={handleDeleteQuest} color="primary">
             Yes
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirmation Dialog for Editing a Quest */}
+      <Dialog open={editConfirmationDialogOpen} onClose={() => setEditConfirmationDialogOpen(false)}>
+        <DialogTitle>Are you sure you want to update this record?</DialogTitle>
+        <DialogActions>
+          <Button onClick={() => setEditConfirmationDialogOpen(false)} color="error">Cancel</Button>
+          <Button onClick={() => { setEditConfirmationDialogOpen(false); handleOpenDialog(questToEdit); }} color="primary">Yes</Button>
         </DialogActions>
       </Dialog>
     </Box>
