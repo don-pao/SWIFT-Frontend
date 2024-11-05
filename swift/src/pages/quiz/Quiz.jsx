@@ -71,7 +71,7 @@ const QuizForm = () => {
   };
 
   const handleDeleteQuiz = async (quizId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this flashcard?");
+    const confirmDelete = window.confirm("Are you sure you want to delete this quiz?");
     if (confirmDelete) {
       try {
         await axios.delete(`http://localhost:8080/api/quiz/deleteQuizDetails/${quizId}`);
@@ -79,149 +79,168 @@ const QuizForm = () => {
       } catch (error) {
         console.error('Error deleting quiz:', error);
       }
-  }
-  };
-
-  // Inline styles
-  const styles = {
-    container: {
-      backgroundColor: '#f8f8f8',
-      borderRadius: '8px',
-      padding: '20px',
-      marginBottom: '20px',
-      boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
-    },
-    title: {
-      fontSize: '1.5em',
-      fontWeight: 'bold',
-      color: '#333',
-      marginBottom: '10px',
-    },
-    formGroup: {
-      marginBottom: '15px',
-    },
-    label: {
-      display: 'block',
-      fontWeight: 'bold',
-      color: '#333',
-    },
-    input: {
-      width: '100%',
-      padding: '8px',
-      marginTop: '5px',
-      border: '1px solid #ddd',
-      borderRadius: '4px',
-      fontSize: '1em',
-    },
-    addButton: {
-      backgroundColor: '#4CAF50',
-      color: 'white',
-      padding: '10px 20px',
-      border: 'none',
-      borderRadius: '4px',
-      fontSize: '1em',
-      cursor: 'pointer',
-      marginTop: '10px',
-    },
-    addButtonHover: {
-      backgroundColor: '#45a049',
-    },
-    quizList: {
-      marginTop: '20px',
-    },
-    quizListItem: {
-      backgroundColor: '#f1f1f1',
-      padding: '10px',
-      marginBottom: '10px',
-      borderRadius: '4px',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    deleteButton: {
-      marginLeft: '10px',
-      backgroundColor: '#d9534f',
-      color: 'white',
-      border: 'none',
-      padding: '5px 10px',
-      borderRadius: '4px',
-      cursor: 'pointer',
-    },
-    deleteButtonHover: {
-      backgroundColor: '#c9302c',
-    },
+    }
   };
 
   return (
-    <><ResponsiveAppBar /><AvatarTheme /><div>
-      <div style={styles.container}>
-        <h2 style={styles.title}>{currentQuizId ? 'Update Quiz' : 'Create a Quiz'}</h2>
-        <form onSubmit={handleCreateOrUpdateQuiz}>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Title:</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              style={styles.input} />
-          </div>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Questions:</label>
-            {questions.map((question, index) => (
-              <div key={index} style={styles.formGroup}>
-                <input
-                  type="text"
-                  value={question}
-                  onChange={(e) => handleQuestionChange(index, e.target.value)}
-                  required
-                  style={styles.input} />
-              </div>
-            ))}
-            <button
-              type="button"
-              style={styles.addButton}
-              onClick={handleAddQuestion}
-            >
-              Add Question
-            </button>
-          </div>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Score:</label>
-            <input
-              type="number"
-              value={score}
-              onChange={(e) => setScore(Number(e.target.value))}
-              required
-              style={styles.input} />
-          </div>
-          <button type="submit" style={styles.addButton}>
-            {currentQuizId ? 'Submit Edit' : 'Submit Quiz'}
-          </button>
-        </form>
-      </div>
+    <><ResponsiveAppBar /><AvatarTheme /><div style={{ padding: '20px' }}>
+      <style>
+        {`
+          .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            color: #555;
+            font-weight: bold;
+          }
 
-      <div style={styles.quizList}>
-        <h2>Quizzes</h2>
-        <ul>
-          {quizzes.map((quiz) => (
-            <li key={quiz.quizId} style={styles.quizListItem}>
-              <strong>{quiz.title}</strong>: {quiz.questions || 'No questions available'} (Score: {quiz.score})
-              <button
-                style={styles.deleteButton}
-                onClick={() => handleEditQuiz(quiz)}
-              >
-                Edit
-              </button>
-              <button
-                style={styles.deleteButton}
-                onClick={() => handleDeleteQuiz(quiz.quizId)}
-              >
-                Delete
-              </button>
-            </li>
+          .quiz-form {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+          }
+
+          .quiz-input-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+          }
+
+          .quiz-input-container label {
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 5px;
+          }
+
+          .quiz-input-container input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.9rem;
+          }
+
+          .submit-button {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+          }
+
+          .quiz-list {
+            margin-top: 20px;
+          }
+
+          .quiz-item {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          .quiz-actions {
+            display: flex;
+            gap: 10px;
+          }
+
+          .quiz-actions button {
+            background: none;
+            border: none;
+            color: #4caf50;
+            font-size: 0.9rem;
+            cursor: pointer;
+          }
+
+          .quiz-actions button:hover {
+            text-decoration: underline;
+          }
+
+          .title, .questions {
+            flex: 1;
+            font-size: 0.9rem;
+            color: #333;
+          }
+
+          .title strong, .questions strong {
+            display: block;
+            font-weight: bold;
+            color: #666;
+          }
+        `}
+      </style>
+
+      <div className="quiz-header">{currentQuizId ? 'Edit Quiz' : 'Create a Quiz'}</div>
+      <form onSubmit={handleCreateOrUpdateQuiz} className="quiz-form">
+        <div className="quiz-input-container">
+          <label>Title:</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter quiz title"
+            required />
+        </div>
+        <div className="quiz-input-container">
+          <label>Questions:</label>
+          {questions.map((question, index) => (
+            <div key={index} className="quiz-input-container">
+              <input
+                type="text"
+                value={question}
+                onChange={(e) => handleQuestionChange(index, e.target.value)}
+                placeholder={`Question ${index + 1}`}
+                required />
+            </div>
           ))}
-        </ul>
+          <button
+            type="button"
+            className="submit-button"
+            onClick={handleAddQuestion}
+          >
+            Add Question
+          </button>
+        </div>
+        <div className="quiz-input-container">
+          <label>Score:</label>
+          <input
+            type="number"
+            value={score}
+            onChange={(e) => setScore(Number(e.target.value))}
+            placeholder="Enter quiz score"
+            required />
+        </div>
+        <button type="submit" className="submit-button">
+          {currentQuizId ? 'Update Quiz' : 'Submit Quiz'}
+        </button>
+      </form>
+
+      <div className="quiz-header" style={{ marginTop: '20px' }}>Quiz List</div>
+      <div className="quiz-list">
+        {quizzes.map((quiz) => (
+          <div key={quiz.quizId} className="quiz-item">
+            <div className="title">
+              <strong>Title:</strong> {quiz.title}
+            </div>
+            <div className="questions">
+              <strong>Questions:</strong> {quiz.questions || 'No questions available'}
+            </div>
+            <div className="quiz-actions">
+              <button onClick={() => handleEditQuiz(quiz)}>Edit</button>
+              <button onClick={() => handleDeleteQuiz(quiz.quizId)}>Delete</button>
+            </div>
+          </div>
+        ))}
       </div>
     </div></>
   );
