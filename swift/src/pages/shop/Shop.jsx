@@ -17,6 +17,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import { Box } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function Shop() {
     const [shopItems, setShopItems] = useState([]);
@@ -113,49 +115,56 @@ function Shop() {
         <Box display="flex" flexDirection="column" alignItems="center" className="App">
             <ResponsiveAppBar />
             <AvatarTheme />
-            <Box textAlign="center" mt={4}>
+            <Box textAlign="center" mt={4} width="100%">
                 <h2>Shop</h2>
                 <Button variant="outlined" onClick={handleOpenDialog}>Add Item</Button>
                 <div>
                     <h3>Shop Items</h3>
-                    <Grid container spacing={2} justifyContent="center">
-                        {shopItems.map(item => (
-                            <Grid item xs={12} sm={6} md={4} key={item.itemId}>
-                                <Box mx={8}> {/* Add horizontal margin */}
-                                <Card sx={{ maxWidth: 345 }}>
-    <CardMedia
-        component="img"
-        alt={item.itemName}
-        height="140"
-        image={`${process.env.PUBLIC_URL}/images/themes/${item.itemUrl}`}
-    />
-    <CardContent sx={{ textAlign: 'center' }}>
-        <Typography gutterBottom variant="h5" component="div">
-            {item.itemName}
-        </Typography>
-        <Box display="flex" justifyContent="center" alignItems="center" sx={{ mt: 1 }}>
-            <Box
-                component="img"
-                src={`${process.env.PUBLIC_URL}/images/themes/coin.jpg`}
-                alt="Coin"
-                sx={{ width: 20, height: 20, marginRight: 0.5 }}
-            />
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {item.itemCost}
-            </Typography>
-        </Box>
-    </CardContent>
-                                        <CardActions>
-                                            <Button size="small" onClick={() => handleEditClick(item)}>Edit</Button>
-                                            <Button size="small" onClick={() => handleDeleteClick(item.itemId)}>Delete</Button>
-                                        </CardActions>
-                                    </Card>
-                                </Box>
-                            </Grid>
-                        ))}
-                    </Grid>
+                    <Box sx={{ maxWidth: '100%', mx: 'auto', px: 10 }}> {/* Center the grid container with padding */}
+                        <Grid container spacing={2} justifyContent="center">
+                            {shopItems.map(item => (
+                                <Grid item xs={12} sm={6} md={4} key={item.itemId}>
+                                    <Box mx={10}> {/* Add horizontal margin for individual cards */}
+                                        <Card sx={{ maxWidth: 345 }}>
+                                            <CardMedia
+                                                component="img"
+                                                alt={item.itemName}
+                                                height="140"
+                                                image={`${process.env.PUBLIC_URL}/images/themes/${item.itemUrl}`}
+                                            />
+                                            <CardContent sx={{ textAlign: 'center' }}>
+                                                <Typography gutterBottom variant="h5" component="div">
+                                                    {item.itemName}
+                                                </Typography>
+                                                <Box display="flex" justifyContent="center" alignItems="center" sx={{ mt: 1 }}>
+                                                    <Box
+                                                        component="img"
+                                                        src={`${process.env.PUBLIC_URL}/images/themes/coin.jpg`}
+                                                        alt="Coin"
+                                                        sx={{ width: 20, height: 20, marginRight: 0.5 }}
+                                                    />
+                                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                                        {item.itemCost}
+                                                    </Typography>
+                                                </Box>
+                                            </CardContent>
+                                            <CardActions>
+                                                <Button size="small" onClick={() => handleEditClick(item)}>
+                                                    <EditIcon />
+                                                </Button>
+                                                <Button size="small" onClick={() => handleDeleteClick(item.itemId)}>
+                                                    <DeleteIcon />
+                                                </Button>
+                                            </CardActions>
+                                        </Card>
+                                    </Box>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    </Box>
                 </div>
             </Box>
+
 
             {/* Dialog for Adding/Editing Items */}
             <Dialog open={openDialog} onClose={handleCloseDialog}>
