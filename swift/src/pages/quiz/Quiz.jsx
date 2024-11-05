@@ -143,7 +143,7 @@ const QuizForm = () => {
               font-size: 0.9rem;
             }
 
-            .submit-button {
+            .submit-button, .cancel-button {
               background-color: #4caf50;
               color: #fff;
               padding: 10px;
@@ -151,6 +151,11 @@ const QuizForm = () => {
               border-radius: 5px;
               cursor: pointer;
               font-size: 1rem;
+              margin-right: 10px;
+            }
+
+            .cancel-button {
+              background-color: #f44336; /* Red color for cancel button */
             }
 
             .quiz-list {
@@ -270,6 +275,11 @@ const QuizForm = () => {
           <button type="submit" className="submit-button">
             {currentQuizId ? 'Update Quiz' : 'Submit Quiz'}
           </button>
+          {currentQuizId && (
+            <button type="button" className="cancel-button" onClick={resetForm}>
+              Cancel
+            </button>
+          )}
         </form>
 
         <div className="quiz-header" style={{ marginTop: '20px' }}>Quiz List</div>
