@@ -2,7 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/home/Home';
 import Test from './pages/test/Test';
-import Shop from './pages/shop/Shop';
+import FlashcardForm from './pages/flashcard/Flashcard';
+import QuizForm from './pages/quiz/Quiz';
+import FlashcardSetForm from './pages/flashcardset/FlashcardSet';
 
 function App() {
   return (
@@ -10,7 +12,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/test" element={<Test />} />
-        <Route path="/shop" element={<Shop />} />
+        <Route path="/flashcard-set-form" element={<FlashcardSetForm />} />
+          <Route path="/flashcard-form/:setId" element={<FlashcardForm />} />
+          <Route path="/quiz-form/:setId" element={<QuizForm />} />
       </Routes>
     </Router>
   );

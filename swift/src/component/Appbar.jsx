@@ -1,5 +1,5 @@
+// ResponsiveAppBar.jsx
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -13,8 +13,14 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import { Link, useNavigate } from 'react-router-dom';
 
-const pages = ['Home', 'Inventory', 'Shop', 'Flashcard'];
+const pages = [
+  { label: 'Home', path: '/' },
+  { label: 'Inventory', path: '/inventory' },
+  { label: 'Shop', path: '/shop' },
+  { label: 'Flashcard', path: '/flashcard-set-form' }
+];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 function ResponsiveAppBar() {
@@ -53,7 +59,9 @@ function ResponsiveAppBar() {
     <AppBar position="static" sx={{ backgroundColor: '#432874' }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+          <IconButton component={Link} to="/" sx={{ color: 'inherit' }}>
+            <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+          </IconButton>
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
               size="large"
@@ -82,18 +90,19 @@ function ResponsiveAppBar() {
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
               {pages.map((page) => (
-                <MenuItem key={page} onClick={() => handleNavigation(page)}>
-                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
+                <MenuItem key={page.label} onClick={handleCloseNavMenu}>
+                  <Typography component={Link} to={page.path} sx={{ textAlign: 'center', color: 'inherit', textDecoration: 'none' }}>
+                    {page.label}
+                  </Typography>
                 </MenuItem>
               ))}
             </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
           <Typography
             variant="h5"
             noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
+            component={Link} // Link for logo navigation
+            to="/" // Navigates to home
             sx={{
               mr: 2,
               display: { xs: 'flex', md: 'none' },
@@ -110,11 +119,12 @@ function ResponsiveAppBar() {
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
               <Button
-                key={page}
-                onClick={() => handleNavigation(page)}
+                key={page.label}
+                component={Link}
+                to={page.path}
                 sx={{ my: 2, color: 'white', display: 'block', fontWeight: 'bold' }}
               >
-                {page}
+                {page.label}
               </Button>
             ))}
           </Box>
