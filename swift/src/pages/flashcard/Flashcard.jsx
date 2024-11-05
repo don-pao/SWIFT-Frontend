@@ -1,75 +1,81 @@
-  import React, { useState, useEffect } from 'react';
-  import axios from 'axios';
-  import ResponsiveAppBar from '../../component/Appbar';
-  import AvatarTheme from '../../component/Theme';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import ResponsiveAppBar from '../../component/Appbar';
+import AvatarTheme from '../../component/Theme';
 
-  const FlashcardForm = () => {
-    const [term, setTerm] = useState('');
-    const [definition, setDefinition] = useState('');
-    const [flashcards, setFlashcards] = useState([]);
-    const [currentFlashcardId, setCurrentFlashcardId] = useState(null);
+const FlashcardForm = () => {
+  const [term, setTerm] = useState('');
+  const [definition, setDefinition] = useState('');
+  const [flashcards, setFlashcards] = useState([]);
+  const [currentFlashcardId, setCurrentFlashcardId] = useState(null);
 
-    const fetchFlashcards = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/api/flashcard/getAllFlashcards');
-        setFlashcards(response.data);
-      } catch (error) {
-        console.error('Error fetching flashcards:', error);
+  const fetchFlashcards = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/flashcard/getAllFlashcards');
+      setFlashcards(response.data);
+    } catch (error) {
+      console.error('Error fetching flashcards:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFlashcards();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newFlashcard = { term, definition };
+
+    if (!term || !definition) {
+      console.error('Both term and definition are required');
+      return;
+    }
+
+    try {
+      if (currentFlashcardId) {
+        await axios.put(`http://localhost:8080/api/flashcard/putFlashcardsDetails/${currentFlashcardId}`, newFlashcard);
+      } else {
+        await axios.post('http://localhost:8080/api/flashcard/postflashcardrecord', newFlashcard);
       }
-    };
-
-    useEffect(() => {
       fetchFlashcards();
-    }, []);
+      resetForm();
+    } catch (error) {
+      console.error('Error submitting flashcard:', error);
+    }
+  };
 
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      const newFlashcard = { term, definition };
+  const resetForm = () => {
+    setTerm('');
+    setDefinition('');
+    setCurrentFlashcardId(null);
+  };
 
-      if (!term || !definition) {
-        console.error('Both term and definition are required');
-        return;
-      }
-
-      try {
-        if (currentFlashcardId) {
-          await axios.put(`http://localhost:8080/api/flashcard/putFlashcardsDetails/${currentFlashcardId}`, newFlashcard);
-        } else {
-          await axios.post('http://localhost:8080/api/flashcard/postflashcardrecord', newFlashcard);
-        }
-        fetchFlashcards();
-        resetForm();
-      } catch (error) {
-        console.error('Error submitting flashcard:', error);
-      }
-    };
-
-    const resetForm = () => {
-      setTerm('');
-      setDefinition('');
-      setCurrentFlashcardId(null);
-    };
-
-    const handleEditFlashcard = (flashcard) => {
+  const handleEditFlashcard = (flashcard) => {
+    const confirmEdit = window.confirm("Are you sure you want to edit this flashcard?");
+    if (confirmEdit) {
       setTerm(flashcard.term);
       setDefinition(flashcard.definition);
       setCurrentFlashcardId(flashcard.flashcardId || flashcard.id);
-    };
+    }
+  };
 
-    const handleDeleteFlashcard = async (id) => {
-      const confirmDelete = window.confirm("Are you sure you want to delete this flashcard?");
-      if (confirmDelete) {
-        try {
-          await axios.delete(`http://localhost:8080/api/flashcard/deleteFlashcardDetails/${id}`);
-          fetchFlashcards();
-        } catch (error) {
-          console.error('Error deleting flashcard:', error);
-        }
+  const handleDeleteFlashcard = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this flashcard?");
+    if (confirmDelete) {
+      try {
+        await axios.delete(`http://localhost:8080/api/flashcard/deleteFlashcardDetails/${id}`);
+        fetchFlashcards();
+      } catch (error) {
+        console.error('Error deleting flashcard:', error);
       }
-    };
+    }
+  };
 
-    return (
-      <><ResponsiveAppBar /><AvatarTheme /><div style={styles.container}>
+  return (
+    <>
+      <ResponsiveAppBar />
+      <AvatarTheme />
+      <div style={styles.container}>
         <style>
           {`
             .flashcard-header {
@@ -118,6 +124,17 @@
               border-radius: 5px;
               cursor: pointer;
               font-size: 1rem;
+            }
+
+            .cancel-button {
+              background-color: #f44336;
+              color: #fff;
+              padding: 10px;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+              font-size: 1rem;
+              margin-left: 10px;
             }
 
             .flashcard-list {
@@ -189,6 +206,11 @@
           <button type="submit" className="submit-button">
             {currentFlashcardId ? 'Update Flashcard' : 'Submit Flashcard'}
           </button>
+          {currentFlashcardId && (
+            <button type="button" className="cancel-button" onClick={resetForm}>
+              Cancel
+            </button>
+          )}
         </form>
 
         <div className="flashcard-header" style={{ marginTop: '20px' }}>Flashcards</div>
@@ -208,16 +230,17 @@
             </div>
           ))}
         </div>
-      </div></>
-    );
-  };
+      </div>
+    </>
+  );
+};
 
-  const styles = {
-    container: {
-      width: '80%',
-      margin: '20px auto',
-      color: '#333',
-    },
-  };
+const styles = {
+  container: {
+    width: '80%',
+    margin: '20px auto',
+    color: '#333',
+  },
+};
 
-  export default FlashcardForm;
+export default FlashcardForm;
