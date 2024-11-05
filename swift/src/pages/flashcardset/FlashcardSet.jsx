@@ -52,10 +52,14 @@ const FlashcardSetForm = () => {
   };
 
   const handleEditFlashcardSet = (flashcardSet) => {
-    setTitle(flashcardSet.title);
-    setDescription(flashcardSet.description);
-    setCurrentSetId(flashcardSet.setId);
+    const confirmEdit = window.confirm("Are you sure you want to edit this flashcard set?");
+    if (confirmEdit) {
+      setTitle(flashcardSet.title);
+      setDescription(flashcardSet.description);
+      setCurrentSetId(flashcardSet.setId);
+    }
   };
+  
 
   const handleDeleteFlashcardSet = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this flashcard set?");

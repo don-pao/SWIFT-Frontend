@@ -51,9 +51,12 @@
     };
 
     const handleEditFlashcard = (flashcard) => {
-      setTerm(flashcard.term);
-      setDefinition(flashcard.definition);
-      setCurrentFlashcardId(flashcard.flashcardId || flashcard.id);
+      const confirmEdit = window.confirm("Are you sure you want to edit this flashcard?");
+      if (confirmEdit) {
+        setTerm(flashcard.term);
+        setDefinition(flashcard.definition);
+        setCurrentFlashcardId(flashcard.flashcardId || flashcard.id);
+      }
     };
 
     const handleDeleteFlashcard = async (id) => {
