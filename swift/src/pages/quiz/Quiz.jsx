@@ -64,11 +64,15 @@ const QuizForm = () => {
   };
 
   const handleEditQuiz = (quiz) => {
-    setTitle(quiz.title);
-    setQuestions(quiz.questions.split(', '));
-    setScore(quiz.score);
-    setCurrentQuizId(quiz.quizId);
+    const confirmEdit = window.confirm("Are you sure you want to edit this quiz?");
+    if (confirmEdit) {
+      setTitle(quiz.title);
+      setQuestions(quiz.questions.split(', '));
+      setScore(quiz.score);
+      setCurrentQuizId(quiz.quizId);
+    }
   };
+  
 
   const handleDeleteQuiz = async (quizId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this quiz?");
