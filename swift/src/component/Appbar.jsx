@@ -40,9 +40,16 @@ function ResponsiveAppBar() {
     setAnchorElNav(null);
   };
 
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
+  const handleCloseUserMenu = (setting) => {
+    if (setting === 'Profile') {
+      navigate('/profile'); // Navigate to the User Profile page
+    } else if (setting === 'Logout') {
+      // Clear any authentication tokens or session data here
+      navigate('/login'); // Redirect to Login page
+    }
+    setAnchorElUser(null); // Close the menu
   };
+  
 
   const handleNavigation = (page) => {
     const routes = {
@@ -150,11 +157,11 @@ function ResponsiveAppBar() {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
-                </MenuItem>
-              ))}
+            {settings.map((setting) => (
+              <MenuItem key={setting} onClick={() => handleCloseUserMenu(setting)}>
+                <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+              </MenuItem>
+            ))}
             </Menu>
           </Box>
         </Toolbar>
