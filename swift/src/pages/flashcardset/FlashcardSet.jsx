@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
+
 const FlashcardSetForm = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -59,7 +60,10 @@ const FlashcardSetForm = () => {
       setCurrentSetId(flashcardSet.setId);
     }
   };
-  
+
+  const handleCancel = () => {
+    resetForm(); // Reset form fields and state
+  };
 
   const handleDeleteFlashcardSet = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this flashcard set?");
@@ -123,7 +127,7 @@ const FlashcardSetForm = () => {
               border-radius: 5px;
               font-size: 0.9rem;
             }
-            .submit-button {
+            .submit-button, .cancel-button {
               background-color: #4caf50;
               color: #fff;
               padding: 10px;
@@ -131,6 +135,10 @@ const FlashcardSetForm = () => {
               border-radius: 5px;
               cursor: pointer;
               font-size: 1rem;
+              margin-right: 10px; /* Add margin for spacing */
+            }
+            .cancel-button {
+              background-color: #f44336; /* Red color for cancel button */
             }
             .flashcard-list {
               margin-top: 20px;
@@ -195,6 +203,11 @@ const FlashcardSetForm = () => {
           <button type="submit" className="submit-button">
             {currentSetId ? 'Update Flashcard Set' : 'Submit Flashcard Set'}
           </button>
+          {currentSetId && ( // Show Cancel button only when editing
+            <button type="button" className="cancel-button" onClick={handleCancel}>
+              Cancel
+            </button>
+          )}
         </form>
 
         <div className="flashcard-header" style={{ marginTop: '20px' }}>Flashcard Sets</div>
