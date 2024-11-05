@@ -53,6 +53,31 @@ const UserProfile = () => {
     }
   };
 
+  // In UserProfile component
+  const handleEmailChange = async (event) => {
+    const newEmail = event.target.value;
+    setEmail(newEmail);
+
+    if (newEmail !== user.email) { // Only check if email has changed
+      try {
+        const exists = await userService.emailExists(newEmail);
+        if (exists) {
+          alert('Email is already taken. Please choose a different one.');
+          // Optionally, reset email or keep current value
+        }
+      } catch (error) {
+        console.error('Error checking email:', error);
+        alert('Error checking email. Please try again.');
+      }
+    }
+  };
+
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/;
+    return password.length >= minLength && hasSpecialChar.test(password);
+  };
+
   const handleUpdate = async (e) => {
     e.preventDefault(); // Prevent default form submission
   
@@ -74,7 +99,30 @@ const UserProfile = () => {
         return;
       }
     }
+
+    if (email !== user.email) {
+      try {
+        const emailExists = await userService.emailExists(email);
+        if (emailExists) {
+          alert('Email is already in use. Please use a different one.');
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking email:', error.message);
+        alert('Error checking email. Please try again.');
+        return;
+      }
+    }
+
+    if (password && !validatePassword(password)) {
+      alert('Password must be at least 8 characters long and must contain at least one special character.');
+      return;
+    }
   
+    const confirmation = window.confirm('Are you sure you want to save these changes?');
+    if (!confirmation) {
+      return;
+    }
 
     try {
       // Step 1: Verify password using verifyPassword method in userService
@@ -166,7 +214,7 @@ const UserProfile = () => {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}
                 style={styles.profileInput}
                 required
               />
