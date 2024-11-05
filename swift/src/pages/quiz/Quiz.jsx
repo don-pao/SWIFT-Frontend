@@ -5,7 +5,9 @@ import AvatarTheme from '../../component/Theme';
 
 const QuizForm = () => {
   const [title, setTitle] = useState('');
-  const [questions, setQuestions] = useState(['']);
+  const [questions, setQuestions] = useState([
+    { text: '', options: ['', '', '', ''], correctAnswerIndex: 0 }
+  ]);
   const [score, setScore] = useState(0);
   const [quizzes, setQuizzes] = useState([]);
   const [currentQuizId, setCurrentQuizId] = useState(null);
@@ -24,19 +26,30 @@ const QuizForm = () => {
   }, []);
 
   const handleAddQuestion = () => {
-    setQuestions([...questions, '']);
+    setQuestions([...questions, { text: '', options: ['', '', '', ''], correctAnswerIndex: 0 }]);
   };
 
   const handleQuestionChange = (index, value) => {
     const newQuestions = [...questions];
-    newQuestions[index] = value;
+    newQuestions[index].text = value;
+    setQuestions(newQuestions);
+  };
+
+  const handleOptionChange = (questionIndex, optionIndex, value) => {
+    const newQuestions = [...questions];
+    newQuestions[questionIndex].options[optionIndex] = value;
+    setQuestions(newQuestions);
+  };
+
+  const handleCorrectAnswerChange = (index, value) => {
+    const newQuestions = [...questions];
+    newQuestions[index].correctAnswerIndex = Number(value);
     setQuestions(newQuestions);
   };
 
   const handleCreateOrUpdateQuiz = async (e) => {
     e.preventDefault();
-    const questionsString = questions.join(', ');
-    const newQuiz = { title, questions: questionsString, score };
+    const newQuiz = { title, questions, score };
 
     if (!title || questions.length === 0 || score < 0) {
       console.error('All fields are required and score must be non-negative');
@@ -58,7 +71,7 @@ const QuizForm = () => {
 
   const resetForm = () => {
     setTitle('');
-    setQuestions(['']);
+    setQuestions([{ text: '', options: ['', '', '', ''], correctAnswerIndex: 0 }]);
     setScore(0);
     setCurrentQuizId(null);
   };
@@ -67,12 +80,11 @@ const QuizForm = () => {
     const confirmEdit = window.confirm("Are you sure you want to edit this quiz?");
     if (confirmEdit) {
       setTitle(quiz.title);
-      setQuestions(quiz.questions.split(', '));
+      setQuestions(quiz.questions);
       setScore(quiz.score);
       setCurrentQuizId(quiz.quizId);
     }
   };
-  
 
   const handleDeleteQuiz = async (quizId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this quiz?");
@@ -87,166 +99,198 @@ const QuizForm = () => {
   };
 
   return (
-    <><ResponsiveAppBar /><AvatarTheme /><div style={{ padding: '20px' }}>
-      <style>
-        {`
-          .quiz-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #f4f4f4;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 1.2rem;
-            color: #555;
-            font-weight: bold;
-          }
+    <>
+      <ResponsiveAppBar />
+      <AvatarTheme />
+      <div style={{ padding: '20px' }}>
+        <style>
+          {`
+            .quiz-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              background-color: #f4f4f4;
+              border-radius: 8px;
+              padding: 10px 20px;
+              font-size: 1.2rem;
+              color: #555;
+              font-weight: bold;
+            }
 
-          .quiz-form {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-          }
+            .quiz-form {
+              background-color: #f9f9f9;
+              padding: 20px;
+              border-radius: 10px;
+              box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            }
 
-          .quiz-input-container {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 15px;
-          }
+            .quiz-input-container {
+              display: flex;
+              flex-direction: column;
+              margin-bottom: 15px;
+            }
 
-          .quiz-input-container label {
-            font-size: 0.9rem;
-            color: #333;
-            margin-bottom: 5px;
-          }
+            .quiz-input-container label {
+              font-size: 0.9rem;
+              color: #333;
+              margin-bottom: 5px;
+            }
 
-          .quiz-input-container input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 0.9rem;
-          }
+            .quiz-input-container input, .quiz-input-container select {
+              padding: 10px;
+              border: 1px solid #ccc;
+              border-radius: 5px;
+              font-size: 0.9rem;
+            }
 
-          .submit-button {
-            background-color: #4caf50;
-            color: #fff;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-          }
+            .submit-button {
+              background-color: #4caf50;
+              color: #fff;
+              padding: 10px;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+              font-size: 1rem;
+            }
 
-          .quiz-list {
-            margin-top: 20px;
-          }
+            .quiz-list {
+              margin-top: 20px;
+            }
 
-          .quiz-item {
-            background-color: #fff;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          }
+            .quiz-item {
+              background-color: #fff;
+              padding: 15px;
+              margin-bottom: 10px;
+              border-radius: 8px;
+              box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            }
 
-          .quiz-actions {
-            display: flex;
-            gap: 10px;
-          }
+            .quiz-actions {
+              display: flex;
+              gap: 10px;
+            }
 
-          .quiz-actions button {
-            background: none;
-            border: none;
-            color: #4caf50;
-            font-size: 0.9rem;
-            cursor: pointer;
-          }
+            .quiz-actions button {
+              background: none;
+              border: none;
+              color: #4caf50;
+              font-size: 0.9rem;
+              cursor: pointer;
+            }
 
-          .quiz-actions button:hover {
-            text-decoration: underline;
-          }
+            .quiz-actions button:hover {
+              text-decoration: underline;
+            }
 
-          .title, .questions {
-            flex: 1;
-            font-size: 0.9rem;
-            color: #333;
-          }
+            .title, .questions {
+              flex: 1;
+              font-size: 0.9rem;
+              color: #333;
+            }
 
-          .title strong, .questions strong {
-            display: block;
-            font-weight: bold;
-            color: #666;
-          }
-        `}
-      </style>
+            .title strong, .questions strong {
+              display: block;
+              font-weight: bold;
+              color: #666;
+            }
+          `}
+        </style>
 
-      <div className="quiz-header">{currentQuizId ? 'Edit Quiz' : 'Create a Quiz'}</div>
-      <form onSubmit={handleCreateOrUpdateQuiz} className="quiz-form">
-        <div className="quiz-input-container">
-          <label>Title:</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter quiz title"
-            required />
-        </div>
-        <div className="quiz-input-container">
-          <label>Questions:</label>
-          {questions.map((question, index) => (
-            <div key={index} className="quiz-input-container">
-              <input
-                type="text"
-                value={question}
-                onChange={(e) => handleQuestionChange(index, e.target.value)}
-                placeholder={`Question ${index + 1}`}
-                required />
+        <div className="quiz-header">{currentQuizId ? 'Edit Quiz' : 'Create a Quiz'}</div>
+        <form onSubmit={handleCreateOrUpdateQuiz} className="quiz-form">
+          <div className="quiz-input-container">
+            <label>Title:</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter quiz title"
+              required
+            />
+          </div>
+          <div className="quiz-input-container">
+            <label>Questions:</label>
+            {questions.map((question, index) => (
+              <div key={index} className="quiz-input-container">
+                <input
+                  type="text"
+                  value={question.text}
+                  onChange={(e) => handleQuestionChange(index, e.target.value)}
+                  placeholder={`Question ${index + 1}`}
+                  required
+                />
+                <div>
+                  <label>Answers:</label>
+                  {question.options.map((option, optionIndex) => (
+                    <div key={optionIndex} className="quiz-input-container">
+                      <input
+                        type="text"
+                        value={option}
+                        onChange={(e) => handleOptionChange(index, optionIndex, e.target.value)}
+                        placeholder={`Answer ${optionIndex + 1}`}
+                        required
+                      />
+                    </div>
+                  ))}
+                </div>
+                <label>Correct Answer:</label>
+                <select
+                  value={question.correctAnswerIndex}
+                  onChange={(e) => handleCorrectAnswerChange(index, e.target.value)}
+                >
+                  {question.options.map((_, optionIndex) => (
+                    <option key={optionIndex} value={optionIndex}>
+                      Answer {optionIndex + 1}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+            <button
+              type="button"
+              className="submit-button"
+              onClick={handleAddQuestion}
+            >
+              Add Question
+            </button>
+          </div>
+          <div className="quiz-input-container">
+            <label>Score:</label>
+            <input
+              type="number"
+              value={score}
+              onChange={(e) => setScore(Number(e.target.value))}
+              placeholder="Enter quiz score"
+              required
+            />
+          </div>
+          <button type="submit" className="submit-button">
+            {currentQuizId ? 'Update Quiz' : 'Submit Quiz'}
+          </button>
+        </form>
+
+        <div className="quiz-header" style={{ marginTop: '20px' }}>Quiz List</div>
+        <div className="quiz-list">
+          {quizzes.map((quiz) => (
+            <div key={quiz.quizId} className="quiz-item">
+              <div className="title">
+                <strong>Title:</strong> {quiz.title}
+              </div>
+              <div className="questions">
+                <strong>Questions:</strong> {quiz.questions.map((q) => q.text).join(', ') || 'No questions available'}
+              </div>
+              <div className="quiz-actions">
+                <button onClick={() => handleEditQuiz(quiz)}>Edit</button>
+                <button onClick={() => handleDeleteQuiz(quiz.quizId)}>Delete</button>
+              </div>
             </div>
           ))}
-          <button
-            type="button"
-            className="submit-button"
-            onClick={handleAddQuestion}
-          >
-            Add Question
-          </button>
         </div>
-        <div className="quiz-input-container">
-          <label>Score:</label>
-          <input
-            type="number"
-            value={score}
-            onChange={(e) => setScore(Number(e.target.value))}
-            placeholder="Enter quiz score"
-            required />
-        </div>
-        <button type="submit" className="submit-button">
-          {currentQuizId ? 'Update Quiz' : 'Submit Quiz'}
-        </button>
-      </form>
-
-      <div className="quiz-header" style={{ marginTop: '20px' }}>Quiz List</div>
-      <div className="quiz-list">
-        {quizzes.map((quiz) => (
-          <div key={quiz.quizId} className="quiz-item">
-            <div className="title">
-              <strong>Title:</strong> {quiz.title}
-            </div>
-            <div className="questions">
-              <strong>Questions:</strong> {quiz.questions || 'No questions available'}
-            </div>
-            <div className="quiz-actions">
-              <button onClick={() => handleEditQuiz(quiz)}>Edit</button>
-              <button onClick={() => handleDeleteQuiz(quiz.quizId)}>Delete</button>
-            </div>
-          </div>
-        ))}
       </div>
-    </div></>
+    </>
   );
 };
 
