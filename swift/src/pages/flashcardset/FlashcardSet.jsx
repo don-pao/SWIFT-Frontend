@@ -35,7 +35,7 @@ const FlashcardSetForm = () => {
 
     try {
       if (currentSetId) {
-        await axios.put(`http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}`, newFlashcardSet);
+        await axios.put(`http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}/addQuiz`, newFlashcardSet);
       } else {
         await axios.post('http://localhost:8080/api/flashcardset/postflashcardsetrecord', newFlashcardSet);
       }
