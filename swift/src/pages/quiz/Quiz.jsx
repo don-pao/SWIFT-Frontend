@@ -11,6 +11,8 @@ const QuizForm = () => {
   const [score, setScore] = useState(0);
   const [quizzes, setQuizzes] = useState([]);
   const [currentQuizId, setCurrentQuizId] = useState(null);
+  const [flashcardSetId, setFlashcardSetId] = useState(null);  // For storing the selected flashcard set ID
+  const [flashcardSets, setFlashcardSets] = useState([]);  // For storing the list of available flashcard sets
 
   const fetchQuizzes = async () => {
     try {
@@ -21,7 +23,18 @@ const QuizForm = () => {
     }
   };
 
+  const fetchFlashcardSets = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/flashcardset/getAllFlashcardSet');
+      console.log('Flashcard Sets:', response.data);
+      setFlashcardSets(response.data);
+    } catch (error) {
+      console.error('Error fetching flashcard sets:', error);
+    }
+  };
+
   useEffect(() => {
+    fetchFlashcardSets();  // Fetch flashcard sets when the component mounts
     fetchQuizzes();
   }, []);
 
@@ -49,9 +62,14 @@ const QuizForm = () => {
 
   const handleCreateOrUpdateQuiz = async (e) => {
     e.preventDefault();
-    const newQuiz = { title, questions, score };
+    const newQuiz = {
+      title,
+      questions,
+      score,
+      flashcardSet: { setId: flashcardSetId },  // Include the selected flashcard set
+    };
 
-    if (!title || questions.length === 0 || score < 0) {
+    if (!title || questions.length === 0 || score < 0 || !flashcardSetId) {
       console.error('All fields are required and score must be non-negative');
       return;
     }
@@ -73,6 +91,7 @@ const QuizForm = () => {
     setTitle('');
     setQuestions([{ text: '', options: ['', '', '', ''], correctAnswerIndex: 0 }]);
     setScore(0);
+    setFlashcardSetId('');
     setCurrentQuizId(null);
   };
 
@@ -82,6 +101,7 @@ const QuizForm = () => {
       setTitle(quiz.title);
       setQuestions(quiz.questions);
       setScore(quiz.score);
+      setFlashcardSetId(quiz.flashcardSetId);
       setCurrentQuizId(quiz.quizId);
     }
   };
@@ -248,50 +268,55 @@ const QuizForm = () => {
                 >
                   {question.options.map((_, optionIndex) => (
                     <option key={optionIndex} value={optionIndex}>
-                      Answer {optionIndex + 1}
+                      Option {optionIndex + 1}
                     </option>
                   ))}
                 </select>
               </div>
             ))}
-            <button
-              type="button"
-              className="submit-button"
-              onClick={handleAddQuestion}
-            >
-              Add Question
-            </button>
           </div>
+          <button type="button" className="submit-button" onClick={handleAddQuestion}>
+            Add Question
+          </button>
           <div className="quiz-input-container">
             <label>Score:</label>
             <input
               type="number"
               value={score}
               onChange={(e) => setScore(Number(e.target.value))}
-              placeholder="Enter quiz score"
+              placeholder="Enter score"
+              min="0"
               required
             />
           </div>
+          <div className="quiz-input-container">
+            <label>Flashcard Set:</label>
+            <select
+              value={flashcardSetId}
+              onChange={(e) => setFlashcardSetId(e.target.value)}
+              required
+            >
+              <option value="">Select Flashcard Set</option>
+              {flashcardSets.map((set) => (
+                <option key={set.setId} value={set.setId}>
+                  {set.title}
+                </option>
+              ))}
+            </select>
+          </div>
           <button type="submit" className="submit-button">
-            {currentQuizId ? 'Update Quiz' : 'Submit Quiz'}
+            {currentQuizId ? 'Update Quiz' : 'Create Quiz'}
           </button>
-          {currentQuizId && (
-            <button type="button" className="cancel-button" onClick={resetForm}>
-              Cancel
-            </button>
-          )}
+          <button type="button" className="cancel-button" onClick={resetForm}>
+            Cancel
+          </button>
         </form>
 
-        <div className="quiz-header" style={{ marginTop: '20px' }}>Quiz List</div>
         <div className="quiz-list">
+          <h3>Existing Quizzes</h3>
           {quizzes.map((quiz) => (
             <div key={quiz.quizId} className="quiz-item">
-              <div className="title">
-                <strong>Title:</strong> {quiz.title}
-              </div>
-              <div className="questions">
-                <strong>Questions:</strong> {quiz.questions.map((q) => q.text).join(', ') || 'No questions available'}
-              </div>
+              <div className="title">{quiz.title}</div>
               <div className="quiz-actions">
                 <button onClick={() => handleEditQuiz(quiz)}>Edit</button>
                 <button onClick={() => handleDeleteQuiz(quiz.quizId)}>Delete</button>
