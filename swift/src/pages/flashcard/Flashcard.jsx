@@ -8,7 +8,10 @@ const FlashcardForm = () => {
   const [definition, setDefinition] = useState('');
   const [flashcards, setFlashcards] = useState([]);
   const [currentFlashcardId, setCurrentFlashcardId] = useState(null);
+  const [flashcardSetId, setFlashcardSetId] = useState(null); // To store selected FlashcardSet ID
+  const [flashcardSets, setFlashcardSets] = useState([]); // To store list of FlashcardSets
 
+  // Fetch all flashcards
   const fetchFlashcards = async () => {
     try {
       const response = await axios.get('http://localhost:8080/api/flashcard/getAllFlashcards');
@@ -18,16 +21,28 @@ const FlashcardForm = () => {
     }
   };
 
+  // Fetch all flashcard sets
+  const fetchFlashcardSets = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/flashcardset/getAllFlashcardSet');
+      setFlashcardSets(response.data);
+    } catch (error) {
+      console.error('Error fetching flashcard sets:', error);
+    }
+  };
+
   useEffect(() => {
-    fetchFlashcards();
+    fetchFlashcardSets(); // Fetch flashcard sets on mount
+    fetchFlashcards(); // Fetch flashcards on mount
   }, []);
 
+  // Handle form submission (create or update flashcard)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newFlashcard = { term, definition };
+    const newFlashcard = { term, definition, flashcardSet: { setId: flashcardSetId } };
 
-    if (!term || !definition) {
-      console.error('Both term and definition are required');
+    if (!term || !definition || !flashcardSetId) {
+      console.error('All fields are required');
       return;
     }
 
@@ -44,23 +59,28 @@ const FlashcardForm = () => {
     }
   };
 
+  // Reset form
   const resetForm = () => {
     setTerm('');
     setDefinition('');
+    setFlashcardSetId(null);
     setCurrentFlashcardId(null);
   };
 
+  // Handle editing flashcard
   const handleEditFlashcard = (flashcard) => {
-    const confirmEdit = window.confirm("Are you sure you want to edit this flashcard?");
+    const confirmEdit = window.confirm('Are you sure you want to edit this flashcard?');
     if (confirmEdit) {
       setTerm(flashcard.term);
       setDefinition(flashcard.definition);
+      setFlashcardSetId(flashcard.flashcardSetId); // Set the flashcard set ID when editing
       setCurrentFlashcardId(flashcard.flashcardId || flashcard.id);
     }
   };
 
+  // Handle deleting flashcard
   const handleDeleteFlashcard = async (id) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this flashcard?");
+    const confirmDelete = window.confirm('Are you sure you want to delete this flashcard?');
     if (confirmDelete) {
       try {
         await axios.delete(`http://localhost:8080/api/flashcard/deleteFlashcardDetails/${id}`);
@@ -109,7 +129,7 @@ const FlashcardForm = () => {
               margin-bottom: 5px;
             }
 
-            .flashcard-input-container input {
+            .flashcard-input-container input, .flashcard-input-container select{
               padding: 10px;
               border: 1px solid #ccc;
               border-radius: 5px;
@@ -169,13 +189,13 @@ const FlashcardForm = () => {
               text-decoration: underline;
             }
 
-            .term, .definition {
+            .term, .definition, .flashcard-set-title {
               flex: 1;
               font-size: 0.9rem;
               color: #333;
             }
 
-            .term strong, .definition strong {
+            .term strong, .definition strong, flashcard-set-title strong {
               display: block;
               font-weight: bold;
               color: #666;
@@ -203,6 +223,21 @@ const FlashcardForm = () => {
               placeholder="Enter definition"
               required />
           </div>
+          <div className="flashcard-input-container">
+            <label>Flashcard Set:</label>
+            <select
+              value={flashcardSetId}
+              onChange={(e) => setFlashcardSetId(e.target.value)}
+              required
+            >
+              <option value="">Select Flashcard Set</option>
+              {flashcardSets.map((set) => (
+                <option key={set.setId} value={set.setId}>
+                  {set.title}
+                </option>
+              ))}
+            </select>
+          </div>
           <button type="submit" className="submit-button">
             {currentFlashcardId ? 'Update Flashcard' : 'Submit Flashcard'}
           </button>
@@ -214,22 +249,28 @@ const FlashcardForm = () => {
         </form>
 
         <div className="flashcard-header" style={{ marginTop: '20px' }}>Flashcards</div>
-        <div className="flashcard-list">
-          {flashcards.map((flashcard) => (
-            <div key={flashcard.flashcardId || flashcard.id} className="flashcard-item">
-              <div className="term">
-                <strong>Term:</strong> {flashcard.term}
-              </div>
-              <div className="definition">
-                <strong>Definition:</strong> {flashcard.definition}
-              </div>
-              <div className="flashcard-actions">
-                <button onClick={() => handleEditFlashcard(flashcard)}>Edit</button>
-                <button onClick={() => handleDeleteFlashcard(flashcard.flashcardId || flashcard.id)}>Delete</button>
-              </div>
-            </div>
-          ))}
-        </div>
+<div className="flashcard-list">
+  {flashcards.map((flashcard) => (
+    <div key={flashcard.flashcardId || flashcard.id} className="flashcard-item">
+      {/* Displaying the Flashcard Set title */}
+        <div className="term">
+        <strong>Term:</strong> {flashcard.term}
+      </div>
+      <div className="flashcard-set-title">
+        <strong>Flashcard Set:</strong> {flashcard.flashcardSet?.title || "No Set Title"}
+      </div>
+
+      <div className="definition">
+        <strong>Definition:</strong> {flashcard.definition}
+      </div>
+      <div className="flashcard-actions">
+        <button onClick={() => handleEditFlashcard(flashcard)}>Edit</button>
+        <button onClick={() => handleDeleteFlashcard(flashcard.flashcardId || flashcard.id)}>Delete</button>
+      </div>
+    </div>
+  ))}
+</div>
+
       </div>
     </>
   );
@@ -237,9 +278,10 @@ const FlashcardForm = () => {
 
 const styles = {
   container: {
-    width: '80%',
-    margin: '20px auto',
-    color: '#333',
+    padding: '20px',
+    fontFamily: 'Arial, sans-serif',
+    backgroundColor: '#f9f9f9',
+    minHeight: '100vh',
   },
 };
 

@@ -182,6 +182,17 @@ const QuizForm = () => {
               margin-top: 20px;
             }
 
+            .quiz-header {
+              font-size: 1.5rem;
+              font-weight: bold;
+              color: #333;
+              margin-bottom: 10px;
+            }
+
+            .quiz-list {
+              margin-top: 20px;
+            }
+
             .quiz-item {
               background-color: #fff;
               padding: 15px;
@@ -210,17 +221,18 @@ const QuizForm = () => {
               text-decoration: underline;
             }
 
-            .title, .questions {
+            .title, .description {
               flex: 1;
               font-size: 0.9rem;
               color: #333;
             }
 
-            .title strong, .questions strong {
+            .title strong, .description strong {
               display: block;
               font-weight: bold;
               color: #666;
             }
+
           `}
         </style>
 
@@ -312,11 +324,16 @@ const QuizForm = () => {
           </button>
         </form>
 
+        <div className="quiz-header" style={{ marginTop: '20px' }}>Quizzes</div>
         <div className="quiz-list">
-          <h3>Existing Quizzes</h3>
           {quizzes.map((quiz) => (
             <div key={quiz.quizId} className="quiz-item">
-              <div className="title">{quiz.title}</div>
+              <div className="title">
+                <strong>Title:</strong> {quiz.title}
+              </div>
+              <div className="description">
+                <strong>Flashcard Set:</strong> {quiz.flashcardSet.title }
+              </div>
               <div className="quiz-actions">
                 <button onClick={() => handleEditQuiz(quiz)}>Edit</button>
                 <button onClick={() => handleDeleteQuiz(quiz.quizId)}>Delete</button>
@@ -324,6 +341,7 @@ const QuizForm = () => {
             </div>
           ))}
         </div>
+
       </div>
     </>
   );
