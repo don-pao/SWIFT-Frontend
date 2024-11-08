@@ -13,13 +13,6 @@ function Home() {
       <ResponsiveAppBar/>
       <AvatarTheme/>
       <Body/>
-      <Button 
-        variant="contained" 
-        color="primary" 
-        onClick={() => navigate('/test')} // Redirect to /test on click
-      >
-        Go to Test Page
-      </Button>
     </div>
   );
 }
