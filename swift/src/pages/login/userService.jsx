@@ -92,8 +92,13 @@ export const userService = {
   },
 
   usernameExists: async (username) => {
+    try {
     const response = await api.get(`/exists?username=${username}`);
     return response.data.exists;
+    } catch (error) {
+      console.error('Email existence check failed:', error.response?.data?.error || 'Error');
+      return false;
+    }
   },
 
   emailExists: async (email) => {
