@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Typography, Button, Card, CardContent, Chip, IconButton, Modal } from '@mui/material';
+import { Box, Typography, Button, Card, CardContent, Chip, IconButton, Modal, Checkbox } from '@mui/material';
 import ToDoFormModal from './ToDoFormModal';
 import { Delete, Edit } from '@mui/icons-material';
 
@@ -25,6 +25,21 @@ function Task() {
     setTasks((prevTasks) => [...prevTasks, newTask].sort((a, b) => a.priority - b.priority));
   };
 
+  const toggleTaskStatus = async (taskId, currentStatus) => {
+    try {
+      const response = await axios.put(`http://localhost:8080/api/task/updateTaskStatus?id=${taskId}&status=${!currentStatus}`);
+      const updatedTask = response.data;
+
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.taskId === updatedTask.taskId ? { ...task, status: updatedTask.status } : task
+        )
+      );
+    } catch (error) {
+      console.error('Error updating task status:', error);
+    }
+  };
+
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -32,7 +47,7 @@ function Task() {
         const sortedTasks = response.data.sort((a, b) => a.priority - b.priority);
         setTasks(sortedTasks);
       } catch (error) {
-        console.error("Error fetching tasks:", error);
+        console.error('Error fetching tasks:', error);
       }
     };
     fetchTasks();
@@ -42,9 +57,9 @@ function Task() {
     try {
       await axios.delete(`http://localhost:8080/api/task/deleteTaskDetails/${taskId}`);
       setTasks((prevTasks) => prevTasks.filter((task) => task.taskId !== taskId));
-      setDeleteConfirmOpen(false); // Close the confirmation modal
+      setDeleteConfirmOpen(false);
     } catch (error) {
-      console.error("Error deleting task:", error);
+      console.error('Error deleting task:', error);
     }
   };
 
@@ -67,7 +82,7 @@ function Task() {
       );
       handleCloseModal();
     } catch (error) {
-      console.error("Error updating task:", error);
+      console.error('Error updating task:', error);
     }
   };
 
@@ -115,7 +130,6 @@ function Task() {
           handleSave={selectedTask ? handleUpdateTask : handleSaveToDo}
           task={selectedTask}
         />
-
         <Box>
           {tasks.map((task) => (
             <Card
@@ -127,13 +141,38 @@ function Task() {
                 border: '1px solid #e0e0e0',
                 backgroundColor: '#f9f9f9',
                 overflow: 'hidden',
+                display: 'flex',
                 '&:hover': {
                   boxShadow: '0px 6px 18px rgba(0, 0, 0, 0.2)',
                 },
               }}
             >
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box
+                sx={{
+                  width: '15%',
+                  backgroundColor: '#FFBE5D',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 1,
+                }}
+              >
+                <Checkbox
+                  checked={task.status}
+                  onChange={() => toggleTaskStatus(task.taskId, task.status)}
+                  sx={{
+                    color: '#FFDFAE', // Color for the checkbox icon when unchecked
+                    '& .MuiSvgIcon-root': {
+                      fontSize: 32, // Increase the size of the checkbox
+                    },
+                    '&.Mui-checked': {
+                      color: '#FFDFAE', // Color for the checkbox icon when checked
+                    },
+                  }}
+                />
+              </Box>
+              <CardContent sx={{ flex: 1 }}>
+                <Box display="flex" alignItems="center" justifyContent="space-between">
                   <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
                     {task.title}
                   </Typography>
@@ -147,11 +186,9 @@ function Task() {
                     }}
                   />
                 </Box>
-
                 <Typography variant="body2" sx={{ color: '#555', marginTop: '8px', fontSize: '1rem' }}>
                   {task.description}
                 </Typography>
-
                 <Typography variant="caption" sx={{ color: '#757575', marginTop: '8px' }}>
                   Deadline: {task.deadline}
                 </Typography>
