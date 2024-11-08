@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
+import { Modal, Box, Typography, Button } from '@mui/material';
+import './Quiz.css'; // Import the CSS
 
 const QuizForm = () => {
   const [title, setTitle] = useState('');
@@ -13,6 +15,34 @@ const QuizForm = () => {
   const [currentQuizId, setCurrentQuizId] = useState(null);
   const [flashcardSetId, setFlashcardSetId] = useState(null);  // For storing the selected flashcard set ID
   const [flashcardSets, setFlashcardSets] = useState([]);  // For storing the list of available flashcard sets
+  const [openEditModal, setOpenEditModal] = React.useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
+  const [selectedQuiz, setSelectedQuiz] = React.useState(null); // Holds the quiz being edited or deleted
+  
+  const handleOpenEditModal = (quiz) => {
+    setSelectedQuiz(quiz);
+    setOpenEditModal(true);
+  };
+  
+  const handleOpenDeleteModal = (quizId) => {
+    setSelectedQuiz(quizId);
+    setOpenDeleteModal(true);
+  };
+  
+  const handleConfirmEdit = () => {
+    if (selectedQuiz) {
+      handleEditQuiz(selectedQuiz);
+      setOpenEditModal(false);
+    }
+  };
+  
+  const handleConfirmDelete = () => {
+    if (selectedQuiz) {
+      handleDeleteQuiz(selectedQuiz);
+      setOpenDeleteModal(false);
+    }
+  };
+  
 
   const fetchQuizzes = async () => {
     try {
@@ -96,146 +126,27 @@ const QuizForm = () => {
   };
 
   const handleEditQuiz = (quiz) => {
-    const confirmEdit = window.confirm("Are you sure you want to edit this quiz?");
-    if (confirmEdit) {
       setTitle(quiz.title);
       setQuestions(quiz.questions);
       setScore(quiz.score);
       setFlashcardSetId(quiz.flashcardSetId);
       setCurrentQuizId(quiz.quizId);
-    }
   };
 
   const handleDeleteQuiz = async (quizId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this quiz?");
-    if (confirmDelete) {
       try {
         await axios.delete(`http://localhost:8080/api/quiz/deleteQuizDetails/${quizId}`);
         fetchQuizzes();
       } catch (error) {
         console.error('Error deleting quiz:', error);
       }
-    }
   };
 
   return (
     <>
       <ResponsiveAppBar />
       <AvatarTheme />
-      <div style={{ padding: '20px' }}>
-        <style>
-          {`
-            .quiz-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              background-color: #f4f4f4;
-              border-radius: 8px;
-              padding: 10px 20px;
-              font-size: 1.2rem;
-              color: #555;
-              font-weight: bold;
-            }
-
-            .quiz-form {
-              background-color: #f9f9f9;
-              padding: 20px;
-              border-radius: 10px;
-              box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            }
-
-            .quiz-input-container {
-              display: flex;
-              flex-direction: column;
-              margin-bottom: 15px;
-            }
-
-            .quiz-input-container label {
-              font-size: 0.9rem;
-              color: #333;
-              margin-bottom: 5px;
-            }
-
-            .quiz-input-container input, .quiz-input-container select {
-              padding: 10px;
-              border: 1px solid #ccc;
-              border-radius: 5px;
-              font-size: 0.9rem;
-            }
-
-            .submit-button, .cancel-button {
-              background-color: #4caf50;
-              color: #fff;
-              padding: 10px;
-              border: none;
-              border-radius: 5px;
-              cursor: pointer;
-              font-size: 1rem;
-              margin-right: 10px;
-            }
-
-            .cancel-button {
-              background-color: #f44336; /* Red color for cancel button */
-            }
-
-            .quiz-list {
-              margin-top: 20px;
-            }
-
-            .quiz-header {
-              font-size: 1.5rem;
-              font-weight: bold;
-              color: #333;
-              margin-bottom: 10px;
-            }
-
-            .quiz-list {
-              margin-top: 20px;
-            }
-
-            .quiz-item {
-              background-color: #fff;
-              padding: 15px;
-              margin-bottom: 10px;
-              border-radius: 8px;
-              box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            }
-
-            .quiz-actions {
-              display: flex;
-              gap: 10px;
-            }
-
-            .quiz-actions button {
-              background: none;
-              border: none;
-              color: #4caf50;
-              font-size: 0.9rem;
-              cursor: pointer;
-            }
-
-            .quiz-actions button:hover {
-              text-decoration: underline;
-            }
-
-            .title, .description {
-              flex: 1;
-              font-size: 0.9rem;
-              color: #333;
-            }
-
-            .title strong, .description strong {
-              display: block;
-              font-weight: bold;
-              color: #666;
-            }
-
-          `}
-        </style>
-
+      <div style={styles.container}>
         <div className="quiz-header">{currentQuizId ? 'Edit Quiz' : 'Create a Quiz'}</div>
         <form onSubmit={handleCreateOrUpdateQuiz} className="quiz-form">
           <div className="quiz-input-container">
@@ -335,9 +246,78 @@ const QuizForm = () => {
                 <strong>Flashcard Set:</strong> {quiz.flashcardSet.title }
               </div>
               <div className="quiz-actions">
-                <button onClick={() => handleEditQuiz(quiz)}>Edit</button>
-                <button onClick={() => handleDeleteQuiz(quiz.quizId)}>Delete</button>
-              </div>
+  <button onClick={() => handleOpenEditModal(quiz)}>Edit</button>
+  <button onClick={() => handleOpenDeleteModal(quiz.quizId)}>Delete</button>
+</div>
+
+{/* Edit Modal */}
+<Modal
+  open={openEditModal}
+  onClose={() => setOpenEditModal(false)}
+  aria-labelledby="edit-quiz-modal"
+  aria-describedby="edit-quiz-description"
+>
+  <Box sx={modalStyle}>
+    <Typography variant="h6" component="h2">
+      Confirm Edit Quiz
+    </Typography>
+    <Typography sx={{ mt: 2 }}>
+      Are you sure you want to edit this quiz?
+    </Typography>
+    <div style={{ marginTop: '20px' }}>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleConfirmEdit}
+      >
+        Confirm
+      </Button>
+      <Button
+        variant="outlined"
+        color="secondary"
+        onClick={() => setOpenEditModal(false)}
+        sx={{ marginLeft: '10px' }}
+      >
+        Cancel
+      </Button>
+    </div>
+  </Box>
+</Modal>
+
+{/* Delete Modal */}
+<Modal
+  open={openDeleteModal}
+  onClose={() => setOpenDeleteModal(false)}
+  aria-labelledby="delete-quiz-modal"
+  aria-describedby="delete-quiz-description"
+>
+  <Box sx={modalStyle}>
+    <Typography variant="h6" component="h2">
+      Confirm Delete Quiz
+    </Typography>
+    <Typography sx={{ mt: 2 }}>
+      Are you sure you want to delete this quiz?
+    </Typography>
+    <div style={{ marginTop: '20px' }}>
+      <Button
+        variant="contained"
+        color="error"
+        onClick={handleConfirmDelete}
+      >
+        Delete
+      </Button>
+      <Button
+        variant="outlined"
+        color="secondary"
+        onClick={() => setOpenDeleteModal(false)}
+        sx={{ marginLeft: '10px' }}
+      >
+        Cancel
+      </Button>
+    </div>
+  </Box>
+</Modal>
+
             </div>
           ))}
         </div>
@@ -346,5 +326,26 @@ const QuizForm = () => {
     </>
   );
 };
+
+const styles = {
+  container: {
+    width: '80%',
+    margin: '20px auto',
+    color: '#333',
+  },
+};
+
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  boxShadow: 24,
+  p: 4,
+  borderRadius: '8px',
+};
+
 
 export default QuizForm;

@@ -3,12 +3,17 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
+import { Modal, Box, Typography, Button } from '@mui/material';
+import './FlashcardSetForm.css'; // Import the CSS
 
 const FlashcardSetForm = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [flashcardSets, setFlashcardSets] = useState([]);
   const [currentSetId, setCurrentSetId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
+  const [modalMessage, setModalMessage] = useState(''); // Modal message
+  const [actionToConfirm, setActionToConfirm] = useState(null); // Action to confirm
   const navigate = useNavigate();
 
   const fetchFlashcardSets = async () => {
@@ -35,7 +40,7 @@ const FlashcardSetForm = () => {
 
     try {
       if (currentSetId) {
-        await axios.put(`http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}/addQuiz`, newFlashcardSet);
+        await axios.put(`http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}`, newFlashcardSet);
       } else {
         await axios.post('http://localhost:8080/api/flashcardset/postflashcardsetrecord', newFlashcardSet);
       }
@@ -53,28 +58,32 @@ const FlashcardSetForm = () => {
   };
 
   const handleEditFlashcardSet = (flashcardSet) => {
-    const confirmEdit = window.confirm("Are you sure you want to edit this flashcard set?");
-    if (confirmEdit) {
+    setModalMessage("Are you sure you want to edit this flashcard set?");
+    setActionToConfirm(() => () => {
       setTitle(flashcardSet.title);
       setDescription(flashcardSet.description);
-      setCurrentSetId(flashcardSet.setId);
-    }
+      setCurrentSetId(flashcardSet.setId); // Set the ID for update
+      setIsModalOpen(false); // Close the modal after confirming
+    });
+    setIsModalOpen(true); // Open modal for confirmation
   };
 
-  const handleCancel = () => {
-    resetForm(); // Reset form fields and state
+  const handleDeleteFlashcardSet = (setId) => {
+    setModalMessage("Are you sure you want to delete this flashcard set?");
+    setActionToConfirm(() => async () => {
+      try {
+        await axios.delete(`http://localhost:8080/api/flashcardset/deleteFlashcardSetDetails/${setId}`);
+        fetchFlashcardSets();
+        setIsModalOpen(false); // Close modal after confirmation
+      } catch (error) {
+        console.error('Error deleting flashcard set:', error);
+      }
+    });
+    setIsModalOpen(true); // Open modal for confirmation
   };
 
-  const handleDeleteFlashcardSet = async (id) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this flashcard set?");
-    if (!confirmDelete) return;
-
-    try {
-      await axios.delete(`http://localhost:8080/api/flashcardset/deleteFlashcardSetDetails/${id}`);
-      fetchFlashcardSets();
-    } catch (error) {
-      console.error('Error deleting flashcard set:', error);
-    }
+  const handleCancelModal = () => {
+    setIsModalOpen(false); // Close the modal without doing anything
   };
 
   const handleAddFlashcard = (setId) => {
@@ -92,94 +101,6 @@ const FlashcardSetForm = () => {
       <ResponsiveAppBar />
       <AvatarTheme />
       <div style={styles.container}>
-        <style>
-          {`
-            .flashcard-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              background-color: #f4f4f4;
-              border-radius: 8px;
-              padding: 10px 20px;
-              font-size: 1.2rem;
-              color: #555;
-              font-weight: bold;
-            }
-            .flashcard-form {
-              background-color: #f9f9f9;
-              padding: 20px;
-              border-radius: 10px;
-              box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            }
-            .flashcard-input-container {
-              display: flex;
-              flex-direction: column;
-              margin-bottom: 15px;
-            }
-            .flashcard-input-container label {
-              font-size: 0.9rem;
-              color: #333;
-              margin-bottom: 5px;
-            }
-            .flashcard-input-container input {
-              padding: 10px;
-              border: 1px solid #ccc;
-              border-radius: 5px;
-              font-size: 0.9rem;
-            }
-            .submit-button, .cancel-button {
-              background-color: #4caf50;
-              color: #fff;
-              padding: 10px;
-              border: none;
-              border-radius: 5px;
-              cursor: pointer;
-              font-size: 1rem;
-              margin-right: 10px; /* Add margin for spacing */
-            }
-            .cancel-button {
-              background-color: #f44336; /* Red color for cancel button */
-            }
-            .flashcard-list {
-              margin-top: 20px;
-            }
-            .flashcard-item {
-              background-color: #fff;
-              padding: 15px;
-              margin-bottom: 10px;
-              border-radius: 8px;
-              box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            }
-            .flashcard-actions {
-              display: flex;
-              gap: 10px;
-            }
-            .flashcard-actions button {
-              background: none;
-              border: none;
-              color: #4caf50;
-              font-size: 0.9rem;
-              cursor: pointer;
-            }
-            .flashcard-actions button:hover {
-              text-decoration: underline;
-            }
-            .title, .description {
-              flex: 1;
-              font-size: 0.9rem;
-              color: #333;
-            }
-            .title strong, .description strong {
-              display: block;
-              font-weight: bold;
-              color: #666;
-            }
-          `}
-        </style>
-
         <div className="flashcard-header">Add a Flashcard Set</div>
         <form onSubmit={handleSubmit} className="flashcard-form">
           <div className="flashcard-input-container">
@@ -204,7 +125,7 @@ const FlashcardSetForm = () => {
             {currentSetId ? 'Update Flashcard Set' : 'Submit Flashcard Set'}
           </button>
           {currentSetId && ( // Show Cancel button only when editing
-            <button type="button" className="cancel-button" onClick={handleCancel}>
+            <button type="button" className="cancel-button" onClick={handleCancelModal}>
               Cancel
             </button>
           )}
@@ -229,6 +150,36 @@ const FlashcardSetForm = () => {
             </div>
           ))}
         </div>
+
+        <Modal
+        open={isModalOpen}
+        onClose={handleCancelModal}
+        aria-labelledby="confirmation-modal-title"
+        aria-describedby="confirmation-modal-description"
+      >
+        <Box sx={modalStyle}>
+          <Typography variant="h6" component="h2">
+            {modalMessage}
+          </Typography>
+          <Typography sx={{ mt: 2 }}>
+            Are you sure you want to proceed?
+          </Typography>
+          <div style={{ marginTop: '20px' }}>
+            <Button variant="contained" color="primary" onClick={actionToConfirm}>
+              Confirm
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleCancelModal}
+              sx={{ marginLeft: '10px' }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </Box>
+      </Modal>
+
       </div>
     </>
   );
@@ -241,5 +192,17 @@ const styles = {
     color: '#333',
   },
 };
+
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  backgroundColor: 'white',
+  padding: '20px',
+  borderRadius: '8px',
+  boxShadow: 24,
+};
+
 
 export default FlashcardSetForm;
