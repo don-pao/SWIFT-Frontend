@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Modal, Box, Typography, TextField, Button } from '@mui/material';
+import { Modal, Box, Typography, TextField, Button, RadioGroup, FormControlLabel, Radio, FormControl, FormHelperText } from '@mui/material';
 
 function ToDoFormModal({ open, handleClose, handleSave, task }) {
   const [formData, setFormData] = useState({
@@ -11,10 +11,11 @@ function ToDoFormModal({ open, handleClose, handleSave, task }) {
     status: false, // Default status is false
   });
 
+  const [errors, setErrors] = useState({});
+
   // Get today's date in 'YYYY-MM-DD' format
   const today = new Date().toISOString().split("T")[0];
 
-  // Populate form fields if `task` is provided (for editing), or clear if adding a new task
   useEffect(() => {
     if (task) {
       setFormData({
@@ -26,7 +27,6 @@ function ToDoFormModal({ open, handleClose, handleSave, task }) {
         taskId: task.taskId || null, // Include taskId for PUT requests
       });
     } else {
-      // Clear fields if creating a new task
       setFormData({
         title: '',
         description: '',
@@ -34,6 +34,7 @@ function ToDoFormModal({ open, handleClose, handleSave, task }) {
         priority: '',
         status: false, // Ensure default status is false for new tasks
       });
+      setErrors({}); // Reset errors when creating a new task
     }
   }, [task, open]);
 
@@ -45,28 +46,41 @@ function ToDoFormModal({ open, handleClose, handleSave, task }) {
     });
   };
 
+  const validateFields = () => {
+    const newErrors = {};
+    if (!formData.title.trim()) newErrors.title = 'Title is required';
+    if (!formData.description.trim()) newErrors.description = 'Description is required';
+    if (!formData.deadline) newErrors.deadline = 'Deadline is required';
+    if (!formData.priority) newErrors.priority = 'Priority is required';
+    return newErrors;
+  };
+
   const handleSubmit = async () => {
+    const validationErrors = validateFields();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     try {
       if (formData.taskId) {
-        // Update existing task
         const response = await axios.put(`http://localhost:8080/api/task/putTaskDetails?id=${formData.taskId}`, formData, {
           headers: {
             'Content-Type': 'application/json',
           },
         });
         console.log("Updated Task:", response.data);
-        handleSave(response.data); // Pass updated task to parent
+        handleSave(response.data);
       } else {
-        // Create a new task
         const response = await axios.post('http://localhost:8080/api/task/posttaskrecord', formData, {
           headers: {
             'Content-Type': 'application/json',
           },
         });
         console.log("Saved New Task:", response.data);
-        handleSave(response.data); // Pass new task to parent
+        handleSave(response.data);
       }
-      handleClose(); // Close the modal
+      handleClose();
     } catch (error) {
       console.error("Error saving task:", error);
     }
@@ -97,6 +111,8 @@ function ToDoFormModal({ open, handleClose, handleSave, task }) {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          error={!!errors.title}
+          helperText={errors.title}
         />
         <TextField
           label="Description"
@@ -105,6 +121,8 @@ function ToDoFormModal({ open, handleClose, handleSave, task }) {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          error={!!errors.description}
+          helperText={errors.description}
         />
         <TextField
           label="Deadline"
@@ -115,18 +133,24 @@ function ToDoFormModal({ open, handleClose, handleSave, task }) {
           fullWidth
           margin="normal"
           InputLabelProps={{ shrink: true }}
-          inputProps={{ min: today }} // Disable past dates
+          inputProps={{ min: today }}
+          error={!!errors.deadline}
+          helperText={errors.deadline}
         />
-        <TextField
-          label="Priority Level"
-          name="priority"
-          type="number"
-          value={formData.priority}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          inputProps={{ min: 1, max: 3 }} // Set priority range between 1 and 3
-        />
+        <FormControl component="fieldset" fullWidth margin="normal" error={!!errors.priority}>
+          <Typography>Priority Level</Typography>
+          <RadioGroup
+            row
+            name="priority"
+            value={formData.priority}
+            onChange={handleChange}
+          >
+            <FormControlLabel value="1" control={<Radio />} label="High" />
+            <FormControlLabel value="2" control={<Radio />} label="Mid" />
+            <FormControlLabel value="3" control={<Radio />} label="Low" />
+          </RadioGroup>
+          <FormHelperText>{errors.priority}</FormHelperText>
+        </FormControl>
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
           <Button
             variant="contained"
