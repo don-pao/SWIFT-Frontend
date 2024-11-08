@@ -49,18 +49,6 @@ function ResponsiveAppBar() {
     }
     setAnchorElUser(null); // Close the menu
   };
-  
-
-  const handleNavigation = (page) => {
-    const routes = {
-      Home: '/',
-      Inventory: '/inventory',
-      Shop: '/shop',
-      Flashcard: '/flashcard'
-    };
-    navigate(routes[page]);
-    handleCloseNavMenu();
-  };
 
   return (
     <AppBar position="static" sx={{ backgroundColor: '#432874' }}>

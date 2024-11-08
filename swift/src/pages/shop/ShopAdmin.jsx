@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ResponsiveAppBar from '../../component/Appbar';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import AvatarTheme from '../../component/Theme';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Modal, Box, Typography, TextField, Button, FormControlLabel, Checkbox } from '@mui/material';
+import { Modal, Box, Typography, TextField, Button } from '@mui/material';
 
 function ToDoFormModal({ open, handleClose, handleSave, task }) {
   const [formData, setFormData] = useState({
@@ -8,10 +8,13 @@ function ToDoFormModal({ open, handleClose, handleSave, task }) {
     description: '',
     deadline: '',
     priority: '',
-    status: false,
+    status: false, // Default status is false
   });
 
-  // Populate form fields if `task` is provided (for editing)
+  // Get today's date in 'YYYY-MM-DD' format
+  const today = new Date().toISOString().split("T")[0];
+
+  // Populate form fields if `task` is provided (for editing), or clear if adding a new task
   useEffect(() => {
     if (task) {
       setFormData({
@@ -29,16 +32,16 @@ function ToDoFormModal({ open, handleClose, handleSave, task }) {
         description: '',
         deadline: '',
         priority: '',
-        status: false,
+        status: false, // Ensure default status is false for new tasks
       });
     }
-  }, [task]);
+  }, [task, open]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: value,
     });
   };
 
@@ -112,28 +115,24 @@ function ToDoFormModal({ open, handleClose, handleSave, task }) {
           fullWidth
           margin="normal"
           InputLabelProps={{ shrink: true }}
+          inputProps={{ min: today }} // Disable past dates
         />
         <TextField
-          label="Priority"
+          label="Priority Level"
           name="priority"
           type="number"
           value={formData.priority}
           onChange={handleChange}
           fullWidth
           margin="normal"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={formData.status}
-              onChange={handleChange}
-              name="status"
-            />
-          }
-          label="Completed"
+          inputProps={{ min: 1, max: 3 }} // Set priority range between 1 and 3
         />
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
-          <Button variant="contained" color="secondary" onClick={handleClose}>
+          <Button
+            variant="contained"
+            onClick={handleClose}
+            sx={{ backgroundColor: '#E03E30', '&:hover': { backgroundColor: '#cc352a' } }}
+          >
             Cancel
           </Button>
           <Button variant="contained" color="primary" onClick={handleSubmit}>
