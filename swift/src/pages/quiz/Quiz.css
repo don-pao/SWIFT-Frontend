@@ -1,0 +1,107 @@
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    color: #555;
+    font-weight: bold;
+  }
+
+  .quiz-form {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .quiz-input-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+  }
+
+  .quiz-input-container label {
+    font-size: 0.9rem;
+    color: #333;
+    margin-bottom: 5px;
+  }
+
+  .quiz-input-container input, .quiz-input-container select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 0.9rem;
+  }
+
+  .submit-button, .cancel-button {
+    background-color: #4caf50;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-right: 10px;
+  }
+
+  .cancel-button {
+    background-color: #f44336; /* Red color for cancel button */
+  }
+
+  .quiz-list {
+    margin-top: 20px;
+  }
+
+  .quiz-header {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .quiz-list {
+    margin-top: 20px;
+  }
+
+  .quiz-item {
+    background-color: #fff;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .quiz-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .quiz-actions button {
+    background: none;
+    border: none;
+    color: #4caf50;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .quiz-actions button:hover {
+    text-decoration: underline;
+  }
+
+  .title, .description {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #333;
+  }
+
+  .title strong, .description strong {
+    display: block;
+    font-weight: bold;
+    color: #666;
+  }
