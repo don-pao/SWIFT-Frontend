@@ -11,9 +11,9 @@ const FlashcardSetForm = () => {
   const [description, setDescription] = useState('');
   const [flashcardSets, setFlashcardSets] = useState([]);
   const [currentSetId, setCurrentSetId] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
-  const [modalMessage, setModalMessage] = useState(''); // Modal message
-  const [actionToConfirm, setActionToConfirm] = useState(null); // Action to confirm
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [selectedSet, setSelectedSet] = useState(null);
   const navigate = useNavigate();
 
   const fetchFlashcardSets = async () => {
@@ -58,41 +58,44 @@ const FlashcardSetForm = () => {
   };
 
   const handleEditFlashcardSet = (flashcardSet) => {
-    setModalMessage("Are you sure you want to edit this flashcard set?");
-    setActionToConfirm(() => () => {
-      setTitle(flashcardSet.title);
-      setDescription(flashcardSet.description);
-      setCurrentSetId(flashcardSet.setId); // Set the ID for update
-      setIsModalOpen(false); // Close the modal after confirming
-    });
-    setIsModalOpen(true); // Open modal for confirmation
+    setSelectedSet(flashcardSet);
+    setOpenEditModal(true);
   };
 
   const handleDeleteFlashcardSet = (setId) => {
-    setModalMessage("Are you sure you want to delete this flashcard set?");
-    setActionToConfirm(() => async () => {
+    setSelectedSet(setId);
+    setOpenDeleteModal(true);
+  };
+
+  const handleConfirmEdit = () => {
+    if (selectedSet) {
+      setTitle(selectedSet.title);
+      setDescription(selectedSet.description);
+      setCurrentSetId(selectedSet.setId);
+      setOpenEditModal(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (selectedSet) {
       try {
-        await axios.delete(`http://localhost:8080/api/flashcardset/deleteFlashcardSetDetails/${setId}`);
+        await axios.delete(`http://localhost:8080/api/flashcardset/deleteFlashcardSetDetails/${selectedSet}`);
         fetchFlashcardSets();
-        setIsModalOpen(false); // Close modal after confirmation
       } catch (error) {
         console.error('Error deleting flashcard set:', error);
       }
-    });
-    setIsModalOpen(true); // Open modal for confirmation
+      setOpenDeleteModal(false);
+    }
   };
 
-  const handleCancelModal = () => {
-    setIsModalOpen(false); // Close the modal without doing anything
-  };
+  const handleCancelEditModal = () => setOpenEditModal(false);
+  const handleCancelDeleteModal = () => setOpenDeleteModal(false);
 
   const handleAddFlashcard = (setId) => {
-    console.log(`Adding a flashcard to set with ID: ${setId}`);
     navigate(`/flashcard-form/${setId}`);
   };
 
   const handleAddQuiz = (setId) => {
-    console.log(`Adding a quiz to set with ID: ${setId}`);
     navigate(`/quiz-form/${setId}`);
   };
 
@@ -110,7 +113,8 @@ const FlashcardSetForm = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter title"
-              required />
+              required
+            />
           </div>
           <div className="flashcard-input-container">
             <label>Description:</label>
@@ -119,16 +123,12 @@ const FlashcardSetForm = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter description"
-              required />
+              required
+            />
           </div>
           <button type="submit" className="submit-button">
             {currentSetId ? 'Update Flashcard Set' : 'Submit Flashcard Set'}
           </button>
-          {currentSetId && ( // Show Cancel button only when editing
-            <button type="button" className="cancel-button" onClick={handleCancelModal}>
-              Cancel
-            </button>
-          )}
         </form>
 
         <div className="flashcard-header" style={{ marginTop: '20px' }}>Flashcard Sets</div>
@@ -151,35 +151,47 @@ const FlashcardSetForm = () => {
           ))}
         </div>
 
+        {/* Edit Modal */}
         <Modal
-        open={isModalOpen}
-        onClose={handleCancelModal}
-        aria-labelledby="confirmation-modal-title"
-        aria-describedby="confirmation-modal-description"
-      >
-        <Box sx={modalStyle}>
-          <Typography variant="h6" component="h2">
-            {modalMessage}
-          </Typography>
-          <Typography sx={{ mt: 2 }}>
-            Are you sure you want to proceed?
-          </Typography>
-          <div style={{ marginTop: '20px' }}>
-            <Button variant="contained" color="primary" onClick={actionToConfirm}>
-              Confirm
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={handleCancelModal}
-              sx={{ marginLeft: '10px' }}
-            >
-              Cancel
-            </Button>
-          </div>
-        </Box>
-      </Modal>
+          open={openEditModal}
+          onClose={handleCancelEditModal}
+          aria-labelledby="edit-modal-title"
+          aria-describedby="edit-modal-description"
+        >
+          <Box sx={modalStyle}>
+            <Typography variant="h6">Confirm Edit</Typography>
+            <Typography sx={{ mt: 2 }}>Are you sure you want to edit this flashcard set?</Typography>
+            <div style={{ marginTop: '20px' }}>
+              <Button variant="contained" color="primary" onClick={handleConfirmEdit}>
+                Confirm
+              </Button>
+              <Button variant="outlined" color="secondary" onClick={handleCancelEditModal} sx={{ ml: 2 }}>
+                Cancel
+              </Button>
+            </div>
+          </Box>
+        </Modal>
 
+        {/* Delete Modal */}
+        <Modal
+          open={openDeleteModal}
+          onClose={handleCancelDeleteModal}
+          aria-labelledby="delete-modal-title"
+          aria-describedby="delete-modal-description"
+        >
+          <Box sx={modalStyle}>
+            <Typography variant="h6">Confirm Delete</Typography>
+            <Typography sx={{ mt: 2 }}>Are you sure you want to delete this flashcard set?</Typography>
+            <div style={{ marginTop: '20px' }}>
+              <Button variant="contained" color="error" onClick={handleConfirmDelete}>
+                Delete
+              </Button>
+              <Button variant="outlined" color="secondary" onClick={handleCancelDeleteModal} sx={{ ml: 2 }}>
+                Cancel
+              </Button>
+            </div>
+          </Box>
+        </Modal>
       </div>
     </>
   );
@@ -203,6 +215,5 @@ const modalStyle = {
   borderRadius: '8px',
   boxShadow: 24,
 };
-
 
 export default FlashcardSetForm;
