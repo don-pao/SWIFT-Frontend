@@ -13,6 +13,7 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import { userService } from '../pages/login/userService';
 import { Link, useNavigate } from 'react-router-dom';
 
 const pages = [
@@ -45,6 +46,7 @@ function ResponsiveAppBar() {
       navigate('/user-profile'); // Navigate to the User Profile page
     } else if (setting === 'Logout') {
       // Clear any authentication tokens or session data here
+      userService.logout();
       navigate('/login'); // Redirect to Login page
     }
     setAnchorElUser(null); // Close the menu
