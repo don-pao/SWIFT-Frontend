@@ -175,45 +175,57 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
             lineHeight: '1.5',
             width: '100%',
             justifyContent: 'flex-start',
-            marginBottom: '10px',
+            marginBottom: '20px',
           }}
         >
           Add a Quest
         </Button>
 
-        <Grid container direction="column" spacing={2}>
+        <Grid container direction="column" spacing={3}> {/* Adjusted spacing to ensure uniform gap */}
           {quests.map((quest) => (
             <Grid item key={quest.dailyQuestId}>
               <Card
                 sx={{
-                  marginBottom: '15px',
                   borderRadius: '12px',
                   boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
                   border: '1px solid #e0e0e0',
                   backgroundColor: '#f9f9f9',
                   overflow: 'hidden',
+                  display: 'flex',
                   '&:hover': {
                     boxShadow: '0px 6px 18px rgba(0, 0, 0, 0.2)',
                   },
                 }}
               >
-                <CardContent>
-                  <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-                    <Box display="flex" flexDirection="column" alignItems="flex-start">
-                      <Box display="flex" alignItems="center">
-                        <Checkbox
-                          checked={quest.status === 'completed'}
-                          onChange={() => handleQuestToggle(quest.dailyQuestId)}
-                          color="primary"
-                        />
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333', marginLeft: 1 }}>
-                          {quest.title}
-                        </Typography>
-                      </Box>
-                      <Typography variant="body2" sx={{ color: '#555', marginLeft: '36px', marginTop: '4px' }}>
-                        {quest.description}
-                      </Typography>
-                    </Box>
+                <Box
+                  sx={{
+                    width: '15%',
+                    backgroundColor: '#9e7aac',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 1,
+                  }}
+                >
+                  <Checkbox
+                    checked={quest.status === 'completed'}
+                    onChange={() => handleQuestToggle(quest.dailyQuestId)}
+                    sx={{
+                      color: '#ffffff',
+                      '& .MuiSvgIcon-root': {
+                        fontSize: 32,
+                      },
+                      '&.Mui-checked': {
+                        color: '#ffffff',
+                      },
+                    }}
+                  />
+                </Box>
+                <CardContent sx={{ flex: 1 }}>
+                  <Box display="flex" alignItems="center" justifyContent="space-between">
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
+                      {quest.title}
+                    </Typography>
                     <Box display="flex" alignItems="center" gap={1}>
                       <img
                         src="/images/themes/coin.jpg"
@@ -225,15 +237,18 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
                       </Typography>
                     </Box>
                   </Box>
+                  <Typography variant="body2" sx={{ color: '#555', marginTop: '3px', fontSize: '1rem' }}>
+                    {quest.description}
+                  </Typography>
+                  <Box display="flex" alignItems="center" justifyContent="flex-end" sx={{ marginTop: '8px' }}>
+                    <IconButton onClick={() => { setEditConfirmationDialogOpen(true); setQuestToEdit(quest); }} sx={{ color: '#216ECC', marginRight: 1 }}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton onClick={() => handleOpenDeleteDialog(quest)} sx={{ color: '#E03E30' }}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
                 </CardContent>
-                <Box display="flex" justifyContent="flex-end" p={1}>
-                  <IconButton onClick={() => { setEditConfirmationDialogOpen(true); setQuestToEdit(quest); }} color="primary">
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleOpenDeleteDialog(quest)} color="error">
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
               </Card>
             </Grid>
           ))}
@@ -268,10 +283,10 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color="error">
+          <Button onClick={handleCloseDialog} sx={{ backgroundColor: '#E1DFE2', color: '#757575' }}>
             Cancel
           </Button>
-          <Button onClick={handleSaveQuest} color="primary">
+          <Button onClick={handleSaveQuest} sx={{ backgroundColor: '#216ECC', color: '#ffffff', '&:hover': { backgroundColor: '#1a5dab' } }}>
             {isEditMode ? 'Save' : 'Add'}
           </Button>
         </DialogActions>
@@ -281,10 +296,10 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
       <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
         <DialogTitle>Are you sure you want to delete this record?</DialogTitle>
         <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="error">
+          <Button onClick={handleCloseDeleteDialog} sx={{ backgroundColor: '#E1DFE2', color: '#757575' }}>
             No
           </Button>
-          <Button onClick={handleDeleteQuest} color="primary">
+          <Button onClick={handleDeleteQuest} sx={{ backgroundColor: '#E03E30', color: '#ffffff', '&:hover': { backgroundColor: '#cc352a' } }}>
             Yes
           </Button>
         </DialogActions>
@@ -294,10 +309,10 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
       <Dialog open={editConfirmationDialogOpen} onClose={() => setEditConfirmationDialogOpen(false)}>
         <DialogTitle>Are you sure you want to update this record?</DialogTitle>
         <DialogActions>
-          <Button onClick={() => setEditConfirmationDialogOpen(false)} color="error">
+          <Button onClick={() => setEditConfirmationDialogOpen(false)} sx={{ backgroundColor: '#E1DFE2', color: '#757575' }}>
             Cancel
           </Button>
-          <Button onClick={() => { setEditConfirmationDialogOpen(false); handleOpenDialog(questToEdit); }} color="primary">
+          <Button onClick={() => { setEditConfirmationDialogOpen(false); handleOpenDialog(questToEdit); }} sx={{ backgroundColor: '#216ECC', color: '#ffffff', '&:hover': { backgroundColor: '#1a5dab' } }}>
             Yes
           </Button>
         </DialogActions>
