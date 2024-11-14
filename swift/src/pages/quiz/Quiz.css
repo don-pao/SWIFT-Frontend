@@ -20,7 +20,7 @@
   .quiz-input-container {
     display: flex;
     flex-direction: column;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
   }
 
   .quiz-input-container label {
@@ -94,7 +94,7 @@
     text-decoration: underline;
   }
 
-  .title, .description {
+  .title, .description, .flashcard-set, .total-score {
     flex: 1;
     font-size: 0.9rem;
     color: #333;
