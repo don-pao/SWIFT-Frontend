@@ -8,13 +8,12 @@ import './Quiz.css'; // Import the CSS
 const QuizForm = () => {
   const [title, setTitle] = useState('');
   const [questions, setQuestions] = useState([
-    { text: '', options: ['', '', '', ''], correctAnswerIndex: 0 }
+    { text: '', options: ['', '', '', ''], correctAnswerIndex: 0, score: 0 } // Use 'score' instead of 'questionScore'
   ]);
-  const [score, setScore] = useState(0);
-  const [quizzes, setQuizzes] = useState([]);
-  const [currentQuizId, setCurrentQuizId] = useState(null);
   const [flashcardSetId, setFlashcardSetId] = useState(null);  // For storing the selected flashcard set ID
   const [flashcardSets, setFlashcardSets] = useState([]);  // For storing the list of available flashcard sets
+  const [quizzes, setQuizzes] = useState([]);
+  const [currentQuizId, setCurrentQuizId] = useState(null);
   const [openEditModal, setOpenEditModal] = React.useState(false);
   const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
   const [selectedQuiz, setSelectedQuiz] = React.useState(null); // Holds the quiz being edited or deleted
@@ -24,6 +23,9 @@ const QuizForm = () => {
     setOpenEditModal(true);
   };
   
+  const handleCancelEditModal = () => setOpenEditModal(false);
+  const handleCancelDeleteModal = () => setOpenDeleteModal(false);
+
   const handleOpenDeleteModal = (quizId) => {
     setSelectedQuiz(quizId);
     setOpenDeleteModal(true);
@@ -42,7 +44,6 @@ const QuizForm = () => {
       setOpenDeleteModal(false);
     }
   };
-  
 
   const fetchQuizzes = async () => {
     try {
@@ -69,7 +70,7 @@ const QuizForm = () => {
   }, []);
 
   const handleAddQuestion = () => {
-    setQuestions([...questions, { text: '', options: ['', '', '', ''], correctAnswerIndex: 0 }]);
+    setQuestions([...questions, { text: '', options: ['', '', '', ''], correctAnswerIndex: 0, score: 0 }]);
   };
 
   const handleQuestionChange = (index, value) => {
@@ -90,17 +91,22 @@ const QuizForm = () => {
     setQuestions(newQuestions);
   };
 
+  const handleQuestionScoreChange = (index, value) => {
+    const newQuestions = [...questions];
+    newQuestions[index].score = Number(value);  // Use 'score' instead of 'questionScore'
+    setQuestions(newQuestions);
+  };
+
   const handleCreateOrUpdateQuiz = async (e) => {
     e.preventDefault();
     const newQuiz = {
       title,
-      questions,
-      score,
       flashcardSet: { setId: flashcardSetId },  // Include the selected flashcard set
+      questions
     };
 
-    if (!title || questions.length === 0 || score < 0 || !flashcardSetId) {
-      console.error('All fields are required and score must be non-negative');
+    if (!title || questions.length === 0 || questions.some(q => q.score < 0) || !flashcardSetId) {
+      console.error('All fields are required and scores must be non-negative');
       return;
     }
 
@@ -119,27 +125,25 @@ const QuizForm = () => {
 
   const resetForm = () => {
     setTitle('');
-    setQuestions([{ text: '', options: ['', '', '', ''], correctAnswerIndex: 0 }]);
-    setScore(0);
+    setQuestions([{ text: '', options: ['', '', '', ''], correctAnswerIndex: 0, score: 0 }]);
     setFlashcardSetId('');
     setCurrentQuizId(null);
   };
 
   const handleEditQuiz = (quiz) => {
-      setTitle(quiz.title);
-      setQuestions(quiz.questions);
-      setScore(quiz.score);
-      setFlashcardSetId(quiz.flashcardSetId);
-      setCurrentQuizId(quiz.quizId);
+    setTitle(quiz.title);
+    setQuestions(quiz.questions);
+    setFlashcardSetId(quiz.flashcardSetId);
+    setCurrentQuizId(quiz.quizId);
   };
 
   const handleDeleteQuiz = async (quizId) => {
-      try {
-        await axios.delete(`http://localhost:8080/api/quiz/deleteQuizDetails/${quizId}`);
-        fetchQuizzes();
-      } catch (error) {
-        console.error('Error deleting quiz:', error);
-      }
+    try {
+      await axios.delete(`http://localhost:8080/api/quiz/deleteQuizDetails/${quizId}`);
+      fetchQuizzes();
+    } catch (error) {
+      console.error('Error deleting quiz:', error);
+    }
   };
 
   return (
@@ -195,23 +199,23 @@ const QuizForm = () => {
                     </option>
                   ))}
                 </select>
+                <div className="quiz-input-container">
+                  <label>Score:</label>
+                  <input
+                    type="number"
+                    value={question.score}
+                    onChange={(e) => handleQuestionScoreChange(index, e.target.value)}
+                    placeholder="Enter score"
+                    min="0"
+                    required
+                  />
+                </div>
               </div>
             ))}
           </div>
           <button type="button" className="submit-button" onClick={handleAddQuestion}>
             Add Question
           </button>
-          <div className="quiz-input-container">
-            <label>Score:</label>
-            <input
-              type="number"
-              value={score}
-              onChange={(e) => setScore(Number(e.target.value))}
-              placeholder="Enter score"
-              min="0"
-              required
-            />
-          </div>
           <div className="quiz-input-container">
             <label>Flashcard Set:</label>
             <select
@@ -230,101 +234,89 @@ const QuizForm = () => {
           <button type="submit" className="submit-button">
             {currentQuizId ? 'Update Quiz' : 'Create Quiz'}
           </button>
-          <button type="button" className="cancel-button" onClick={resetForm}>
-            Cancel
-          </button>
+          {currentQuizId && (
+            <button type="button" className="cancel-button" onClick={resetForm}>
+              Cancel
+            </button>
+          )}
         </form>
 
         <div className="quiz-header" style={{ marginTop: '20px' }}>Quizzes</div>
         <div className="quiz-list">
-          {quizzes.map((quiz) => (
-            <div key={quiz.quizId} className="quiz-item">
-              <div className="title">
-                <strong>Title:</strong> {quiz.title}
-              </div>
-              <div className="description">
-                <strong>Flashcard Set:</strong> {quiz.flashcardSet.title }
-              </div>
-              <div className="quiz-actions">
-  <button onClick={() => handleOpenEditModal(quiz)}>Edit</button>
-  <button onClick={() => handleOpenDeleteModal(quiz.quizId)}>Delete</button>
-</div>
-
-{/* Edit Modal */}
-<Modal
-  open={openEditModal}
-  onClose={() => setOpenEditModal(false)}
-  aria-labelledby="edit-quiz-modal"
-  aria-describedby="edit-quiz-description"
->
-  <Box sx={modalStyle}>
-    <Typography variant="h6" component="h2">
-      Confirm Edit Quiz
-    </Typography>
-    <Typography sx={{ mt: 2 }}>
-      Are you sure you want to edit this quiz?
-    </Typography>
-    <div style={{ marginTop: '20px' }}>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleConfirmEdit}
-      >
-        Confirm
-      </Button>
-      <Button
-        variant="outlined"
-        color="secondary"
-        onClick={() => setOpenEditModal(false)}
-        sx={{ marginLeft: '10px' }}
-      >
-        Cancel
-      </Button>
-    </div>
-  </Box>
-</Modal>
-
-{/* Delete Modal */}
-<Modal
-  open={openDeleteModal}
-  onClose={() => setOpenDeleteModal(false)}
-  aria-labelledby="delete-quiz-modal"
-  aria-describedby="delete-quiz-description"
->
-  <Box sx={modalStyle}>
-    <Typography variant="h6" component="h2">
-      Confirm Delete Quiz
-    </Typography>
-    <Typography sx={{ mt: 2 }}>
-      Are you sure you want to delete this quiz?
-    </Typography>
-    <div style={{ marginTop: '20px' }}>
-      <Button
-        variant="contained"
-        color="error"
-        onClick={handleConfirmDelete}
-      >
-        Delete
-      </Button>
-      <Button
-        variant="outlined"
-        color="secondary"
-        onClick={() => setOpenDeleteModal(false)}
-        sx={{ marginLeft: '10px' }}
-      >
-        Cancel
-      </Button>
-    </div>
-  </Box>
-</Modal>
-
+        {quizzes.map((quiz) => (
+          <div key={quiz.quizId} className="quiz-item">
+            <div className="title">
+              <strong>Title:</strong> {quiz.title}
             </div>
-          ))}
-        </div>
+            <div className="flashcard-set">
+              <strong>Flashcard Set:</strong> {quiz.flashcardSetTitle}
+            </div>
+            <div className="total-score">
+              <strong>Total Score:</strong> {quiz.totalScore}
+            </div>
+            <div className="quiz-actions">
+              <button onClick={() => handleOpenEditModal(quiz)}>Edit</button>
+              <button onClick={() => handleOpenDeleteModal(quiz.quizId)}>Delete</button>
+            </div>
+          </div>
+        ))}
+      </div>
 
+        {/* Edit Modal */}
+        <Modal
+          open={openEditModal}
+          onClose={handleCancelEditModal}
+          aria-labelledby="edit-modal-title"
+          aria-describedby="edit-modal-description"
+        >
+          <Box sx={modalStyle}>
+            <Typography variant="h6">Confirm Edit</Typography>
+            <Typography sx={{ mt: 2 }}>Are you sure you want to edit this quiz?</Typography>
+            <div style={{ marginTop: '20px' }}>
+              <Button variant="contained" color="primary" onClick={handleConfirmEdit}>
+                Confirm
+              </Button>
+              <Button variant="outlined" color="secondary" onClick={handleCancelEditModal} sx={{ ml: 2 }}>
+                Cancel
+              </Button>
+            </div>
+          </Box>
+        </Modal>
+
+        {/* Delete Modal */}
+        <Modal
+          open={openDeleteModal}
+          onClose={handleCancelDeleteModal}
+          aria-labelledby="delete-modal-title"
+          aria-describedby="delete-modal-description"
+        >
+          <Box sx={modalStyle}>
+            <Typography variant="h6">Confirm Delete</Typography>
+            <Typography sx={{ mt: 2 }}>Are you sure you want to delete this quiz?</Typography>
+            <div style={{ marginTop: '20px' }}>
+              <Button variant="contained" color="error" onClick={handleConfirmDelete}>
+                Delete
+              </Button>
+              <Button variant="outlined" color="secondary" onClick={handleCancelDeleteModal} sx={{ ml: 2 }}>
+                Cancel
+              </Button>
+            </div>
+          </Box>
+        </Modal>
       </div>
     </>
   );
+};
+
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  backgroundColor: 'white',
+  padding: '20px',
+  borderRadius: '8px',
+  boxShadow: 24,
 };
 
 const styles = {
@@ -334,18 +326,5 @@ const styles = {
     color: '#333',
   },
 };
-
-const modalStyle = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  boxShadow: 24,
-  p: 4,
-  borderRadius: '8px',
-};
-
 
 export default QuizForm;
