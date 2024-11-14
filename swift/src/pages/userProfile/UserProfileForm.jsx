@@ -123,33 +123,7 @@ import { useNavigate } from 'react-router-dom';
       return;
     }
   
-    if (username !== user.username) {
-      try {
-        const usernameExists = await userService.usernameExists(username);
-        if (usernameExists) {
-          openModal('Username is already taken. Please choose a different one.');
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking username:', error.message);
-        openModal('Error checking username. Please try again.');
-        return;
-      }
-    }
-
-    if (email !== user.email) {
-      try {
-        const emailExists = await userService.emailExists(email);
-        if (emailExists) {
-          openModal('Email is already in use. Please use a different one.');
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking email:', error.message);
-        openModal('Error checking email. Please try again.');
-        return;
-      }
-    }
+   
 
     if (password && !validatePassword(password)) {
       openModal('Password must be at least 8 characters long and must contain at least one special character.');
