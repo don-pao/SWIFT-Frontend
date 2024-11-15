@@ -18,31 +18,56 @@ const FlashcardSetForm = () => {
 
   const fetchFlashcardSets = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/flashcardset/getAllFlashcardSet');
+      // Retrieve the userID from localStorage or wherever it's stored
+      const userID = localStorage.getItem('userID');
+      if (!userID) {
+        console.error('User ID is required');
+        return;
+      }
+  
+      const response = await axios.get(`http://localhost:8080/api/flashcardset/getFlashcardSetsByUser?userID=${userID}`);
       setFlashcardSets(response.data);
     } catch (error) {
       console.error('Error fetching flashcard sets:', error);
     }
   };
-
+  
   useEffect(() => {
     fetchFlashcardSets();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newFlashcardSet = { title, description };
-
+    console.log('Submit button clicked');
+    // Retrieve the userID (assuming it's stored in localStorage after login)
+    const userID = localStorage.getItem('userID'); // or any other method you use to store the user ID
+    
+    if (!userID) {
+      console.error('User ID is required');
+      return;
+    }
+  
+    const newFlashcardSet = { title, description, userID }; // Now that userID is available, add it to the object
+  
     if (!title || !description) {
       console.error('Both title and description are required');
       return;
     }
 
+     // Log the values before making the request
+     console.log('Submitting Flashcard Set:', newFlashcardSet);
+     console.log('User ID:', userID);
+     console.log('Request URL:', currentSetId 
+         ? `http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}?userID=${userID}`
+         : `http://localhost:8080/api/flashcardset/postflashcardsetrecord?userID=${userID}`);
+     
     try {
       if (currentSetId) {
-        await axios.put(`http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}`, newFlashcardSet);
+        // Update flashcard set (if currentSetId exists)
+        await axios.put(`http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}?userID=${userID}`, newFlashcardSet);
       } else {
-        await axios.post('http://localhost:8080/api/flashcardset/postflashcardsetrecord', newFlashcardSet);
+        // Create a new flashcard set (pass userID as query parameter)
+        await axios.post(`http://localhost:8080/api/flashcardset/postflashcardsetrecord?userID=${userID}`, newFlashcardSet);
       }
       fetchFlashcardSets();
       resetForm();
@@ -50,6 +75,7 @@ const FlashcardSetForm = () => {
       console.error('Error submitting flashcard set:', error);
     }
   };
+  
 
   const resetForm = () => {
     setTitle('');
