@@ -64,7 +64,7 @@ function ShopUI() {
                                                 <Box display="flex" justifyContent="center" alignItems="center" sx={{ mt: 1 }}>
                                                     <Box
                                                         component="img"
-                                                        src={`${process.env.PUBLIC_URL}/images/themes/coin.jpg`}
+                                                        src={`${process.env.PUBLIC_URL}/images/themes/coin.png`}
                                                         alt="Coin"
                                                         sx={{ width: 20, height: 20, marginRight: 0.5 }}
                                                     />

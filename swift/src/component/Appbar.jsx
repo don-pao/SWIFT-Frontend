@@ -1,4 +1,3 @@
-// ResponsiveAppBar.jsx
 import React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -28,6 +27,9 @@ function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
+  // Placeholder for coin amount
+  const [coinAmount, setCoinAmount] = React.useState(100); // Adjust this based on backend data
+
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
@@ -48,18 +50,6 @@ function ResponsiveAppBar() {
       navigate('/login'); // Redirect to Login page
     }
     setAnchorElUser(null); // Close the menu
-  };
-  
-
-  const handleNavigation = (page) => {
-    const routes = {
-      Home: '/',
-      Inventory: '/inventory',
-      Shop: '/shop',
-      Flashcard: '/flashcard'
-    };
-    navigate(routes[page]);
-    handleCloseNavMenu();
   };
 
   return (
@@ -135,7 +125,18 @@ function ResponsiveAppBar() {
               </Button>
             ))}
           </Box>
-          <Box sx={{ flexGrow: 0 }}>
+          <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
+            {/* Coin Icon and Amount */}
+            <Box
+              component="img"
+              src={`${process.env.PUBLIC_URL}/images/themes/coin.png`}
+              alt="Coin"
+              sx={{ width: 20, height: 20, mr: 0.5 }}
+            />
+            <Typography variant="body1" sx={{ color: 'white', mr: 2 }}>
+              {coinAmount}
+            </Typography>
+            {/* Profile Icon */}
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <AccountCircle sx={{ color: 'white', fontSize: '30px' }} />

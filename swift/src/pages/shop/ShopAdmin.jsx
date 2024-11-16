@@ -139,7 +139,7 @@ function Shop() {
                                                 <Box display="flex" justifyContent="center" alignItems="center" sx={{ mt: 1 }}>
                                                     <Box
                                                         component="img"
-                                                        src={`${process.env.PUBLIC_URL}/images/themes/coin.jpg`}
+                                                        src={`${process.env.PUBLIC_URL}/images/themes/coin.png`}
                                                         alt="Coin"
                                                         sx={{ width: 20, height: 20, marginRight: 0.5 }}
                                                     />
@@ -148,11 +148,11 @@ function Shop() {
                                                     </Typography>
                                                 </Box>
                                             </CardContent>
-                                            <CardActions>
+                                            <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
                                                 <Button size="small" onClick={() => handleEditClick(item)}>
                                                     <EditIcon />
                                                 </Button>
-                                                <Button size="small" onClick={() => handleDeleteClick(item.itemId)}>
+                                                <Button size="small" color="error" onClick={() => handleDeleteClick(item.itemId)}>
                                                     <DeleteIcon />
                                                 </Button>
                                             </CardActions>
