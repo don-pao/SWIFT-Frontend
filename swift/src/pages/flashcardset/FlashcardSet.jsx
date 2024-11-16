@@ -26,7 +26,8 @@ const FlashcardSetForm = () => {
       }
   
       const response = await axios.get(`http://localhost:8080/api/flashcardset/getFlashcardSetsByUser?userID=${userID}`);
-      setFlashcardSets(response.data);
+      console.log(response.data);
+      setFlashcardSets(Array.isArray(response.data) ? response.data : []); 
     } catch (error) {
       console.error('Error fetching flashcard sets:', error);
     }
