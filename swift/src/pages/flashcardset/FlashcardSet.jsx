@@ -5,6 +5,7 @@ import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
 import { Modal, Box, Typography, Button } from '@mui/material';
 import './FlashcardSetForm.css'; // Import the CSS
+import { usePersonalInfo } from '../../context/PersonalInfoContext'; // Import the context hook
 
 const FlashcardSetForm = () => {
   const [title, setTitle] = useState('');
@@ -14,9 +15,12 @@ const FlashcardSetForm = () => {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedSet, setSelectedSet] = useState(null);
-  const [users, setUsers] = useState([]); // State for users
-  const [selectedUserId, setSelectedUserId] = useState(''); // State for selected user ID
+  const [users, setUsers] = useState([]); // State for users (optional now if using context)
   const navigate = useNavigate();
+
+  // Access the user info from context
+  const { personalInfo } = usePersonalInfo();
+  const userID = personalInfo.userId;
 
   // Fetch flashcard sets
   const fetchFlashcardSets = async () => {
@@ -28,7 +32,7 @@ const FlashcardSetForm = () => {
     }
   };
 
-  // Fetch users
+  // Fetch users (optional if not using the select dropdown anymore)
   const fetchUsers = async () => {
     try {
       const response = await axios.get('http://localhost:8080/api/user/get');
@@ -48,10 +52,14 @@ const FlashcardSetForm = () => {
     const newFlashcardSet = {
       title,
       description,
-      user: { userID: selectedUserId }, // Send the user as an object
+      user: { userID }, // Use the userID from context
     };
 
-    if (!title || !description || !selectedUserId) {
+    console.log('Title:', title);
+    console.log('Description:', description);
+    console.log('User ID:', personalInfo.userId);
+
+    if (!title || !description || !userID) {
       console.error('Title, description, and user ID are required');
       return;
     }
@@ -78,7 +86,6 @@ const FlashcardSetForm = () => {
   const resetForm = () => {
     setTitle('');
     setDescription('');
-    setSelectedUserId(''); // Reset user ID
     setCurrentSetId(null);
   };
 
@@ -96,7 +103,6 @@ const FlashcardSetForm = () => {
     if (selectedSet) {
       setTitle(selectedSet.title);
       setDescription(selectedSet.description);
-      setSelectedUserId(selectedSet.user.userID); // Set user ID from the selected set
       setCurrentSetId(selectedSet.setId);
       setOpenEditModal(false);
     }
@@ -152,20 +158,14 @@ const FlashcardSetForm = () => {
               required
             />
           </div>
+          {/* User dropdown can be removed now since the user ID is automatically retrieved */}
           <div className="flashcard-input-container">
             <label>User:</label>
-            <select
-              value={selectedUserId}
-              onChange={(e) => setSelectedUserId(e.target.value)}
-              required
-            >
-              <option value="">Select User</option>
-              {users.map((user) => (
-                <option key={user.userID} value={user.userID}>
-                  {user.username}
-                </option>
-              ))}
-            </select>
+            <input
+              type="text"
+              value={userID} // Display the user ID that is automatically fetched
+              disabled
+            />
           </div>
           <button type="submit" className="submit-button">
             {currentSetId ? 'Update Flashcard Set' : 'Submit Flashcard Set'}
