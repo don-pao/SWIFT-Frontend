@@ -42,12 +42,12 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
 
   const fetchQuests = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/dailyquest/getAllDailyQuest');
+      const response = await axios.get(`http://localhost:8080/api/dailyquest/getDailyQuestByUserID/${userID}`);
       setQuests(response.data);
     } catch (error) {
       console.error('Error fetching quests:', error);
     }
-  }, [setQuests]);
+  }, [setQuests, userID]);
 
   useEffect(() => {
     fetchQuests();
@@ -112,11 +112,9 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
       description: newQuestData.description,
       status: isEditMode ? undefined : 'incomplete',
       coinsEarned: newQuestData.reward,
-      user: { userID },
+      user: { userID },  // Ensure the user ID is set
     };
-
-    console.log('Quest data being sent:', questData);
-
+  
     try {
       if (isEditMode && currentQuestId) {
         await axios.put(
@@ -127,11 +125,12 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
         await axios.post('http://localhost:8080/api/dailyquest/postDailyQuestRecord', questData);
       }
       handleCloseDialog();
-      fetchQuests();
+      fetchQuests(); // Fetch updated quests
     } catch (error) {
       console.error('Error saving quest:', error);
     }
   };
+  
 
   const handleOpenDeleteDialog = (quest) => {
     setQuestToDelete(quest);
