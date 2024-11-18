@@ -52,7 +52,6 @@ export const userService = {
       // Store user data as before
       // Store user data as before
       if (data.userId) {
-        localStorage.setItem('userID', data.userId);
         localStorage.setItem('userData', JSON.stringify(data));
       }
       
