@@ -3,14 +3,16 @@ import axios from 'axios';
 import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
 import { Modal, Box, Typography, Button } from '@mui/material';
+import { useParams } from 'react-router-dom';
 import './Quiz.css'; // Import the CSS
 
 const QuizForm = () => {
+  const { setId } = useParams(); // Extract set_id
   const [title, setTitle] = useState('');
   const [questions, setQuestions] = useState([
     { text: '', options: ['', '', '', ''], correctAnswerIndex: 0, score: 0 } // Use 'score' instead of 'questionScore'
   ]);
-  const [flashcardSetId, setFlashcardSetId] = useState(null);  // For storing the selected flashcard set ID
+  const [flashcardSetId, setFlashcardSetId] = useState(setId);  // For storing the selected flashcard set ID
   const [flashcardSets, setFlashcardSets] = useState([]);  // For storing the list of available flashcard sets
   const [quizzes, setQuizzes] = useState([]);
   const [currentQuizId, setCurrentQuizId] = useState(null);
@@ -18,6 +20,13 @@ const QuizForm = () => {
   const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
   const [selectedQuiz, setSelectedQuiz] = React.useState(null); // Holds the quiz being edited or deleted
   
+  useEffect(() => {
+    if (setId) {
+      setFlashcardSetId(setId); // Ensure the setId is set
+    }
+  }, [setId]);
+
+
   const handleOpenEditModal = (quiz) => {
     setSelectedQuiz(quiz);
     setOpenEditModal(true);
@@ -101,7 +110,7 @@ const QuizForm = () => {
     e.preventDefault();
     const newQuiz = {
       title,
-      flashcardSet: { setId: flashcardSetId },  // Include the selected flashcard set
+      flashcardSet: { setId },  // Include the selected flashcard set
       questions
     };
 
@@ -216,21 +225,9 @@ const QuizForm = () => {
           <button type="button" className="submit-button" onClick={handleAddQuestion}>
             Add Question
           </button>
-          <div className="quiz-input-container">
-            <label>Flashcard Set:</label>
-            <select
-              value={flashcardSetId}
-              onChange={(e) => setFlashcardSetId(e.target.value)}
-              required
-            >
-              <option value="">Select Flashcard Set</option>
-              {flashcardSets.map((set) => (
-                <option key={set.setId} value={set.setId}>
-                  {set.title}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Hidden input for Flashcard Set ID */}
+          <input type="hidden" value={flashcardSetId} />
+
           <button type="submit" className="submit-button">
             {currentQuizId ? 'Update Quiz' : 'Create Quiz'}
           </button>

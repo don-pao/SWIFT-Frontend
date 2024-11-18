@@ -14,8 +14,11 @@ const FlashcardSetForm = () => {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedSet, setSelectedSet] = useState(null);
+  const [users, setUsers] = useState([]); // State for users
+  const [selectedUserId, setSelectedUserId] = useState(''); // State for selected user ID
   const navigate = useNavigate();
 
+  // Fetch flashcard sets
   const fetchFlashcardSets = async () => {
     try {
       const response = await axios.get('http://localhost:8080/api/flashcardset/getAllFlashcardSet');
@@ -25,24 +28,45 @@ const FlashcardSetForm = () => {
     }
   };
 
+  // Fetch users
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/user/get');
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
   useEffect(() => {
     fetchFlashcardSets();
+    fetchUsers();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newFlashcardSet = { title, description };
+    const newFlashcardSet = {
+      title,
+      description,
+      user: { userID: selectedUserId }, // Send the user as an object
+    };
 
-    if (!title || !description) {
-      console.error('Both title and description are required');
+    if (!title || !description || !selectedUserId) {
+      console.error('Title, description, and user ID are required');
       return;
     }
 
     try {
       if (currentSetId) {
-        await axios.put(`http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}`, newFlashcardSet);
+        await axios.put(
+          `http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}`,
+          newFlashcardSet
+        );
       } else {
-        await axios.post('http://localhost:8080/api/flashcardset/postflashcardsetrecord', newFlashcardSet);
+        await axios.post(
+          'http://localhost:8080/api/flashcardset/postflashcardsetrecord',
+          newFlashcardSet
+        );
       }
       fetchFlashcardSets();
       resetForm();
@@ -54,6 +78,7 @@ const FlashcardSetForm = () => {
   const resetForm = () => {
     setTitle('');
     setDescription('');
+    setSelectedUserId(''); // Reset user ID
     setCurrentSetId(null);
   };
 
@@ -71,6 +96,7 @@ const FlashcardSetForm = () => {
     if (selectedSet) {
       setTitle(selectedSet.title);
       setDescription(selectedSet.description);
+      setSelectedUserId(selectedSet.user.userID); // Set user ID from the selected set
       setCurrentSetId(selectedSet.setId);
       setOpenEditModal(false);
     }
@@ -125,6 +151,21 @@ const FlashcardSetForm = () => {
               placeholder="Enter description"
               required
             />
+          </div>
+          <div className="flashcard-input-container">
+            <label>User:</label>
+            <select
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(e.target.value)}
+              required
+            >
+              <option value="">Select User</option>
+              {users.map((user) => (
+                <option key={user.userID} value={user.userID}>
+                  {user.username}
+                </option>
+              ))}
+            </select>
           </div>
           <button type="submit" className="submit-button">
             {currentSetId ? 'Update Flashcard Set' : 'Submit Flashcard Set'}
