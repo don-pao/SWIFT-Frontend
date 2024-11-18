@@ -12,6 +12,7 @@ function Task() {
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuTask, setMenuTask] = useState(null);
+  const [activeTab, setActiveTab] = useState('Pending'); // Default tab is Pending
 
   const handleOpenModal = () => {
     setSelectedTask(null);
@@ -100,9 +101,38 @@ function Task() {
 
   return (
     <Box sx={{ width: '30%', height: '100%' }}>
-      <Typography variant="h5" sx={{ marginBottom: '10px', fontWeight: 'bold', color: '#34313A', textAlign: 'left' }}>
-        To Do's
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#34313A', textAlign: 'left' }}>
+          To Do's
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box
+            onClick={() => setActiveTab('Pending')}
+            sx={{
+              cursor: 'pointer',
+              padding: '8px 12px',
+              borderBottom: activeTab === 'Pending' ? '4px solid #4F2A93' : 'none',
+            }}
+          >
+            <Typography sx={{ fontWeight: 'bold', color: activeTab === 'Pending' ? '#4F2A93' : '#757575' }}>
+              Pending
+            </Typography>
+          </Box>
+          <Box
+            onClick={() => setActiveTab('Done')}
+            sx={{
+              cursor: 'pointer',
+              padding: '8px 12px',
+              borderBottom: activeTab === 'Done' ? '4px solid #4F2A93' : 'none',
+            }}
+          >
+            <Typography sx={{ fontWeight: 'bold', color: activeTab === 'Done' ? '#4F2A93' : '#757575' }}>
+              Done
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+
       <Box
         sx={{
           height: '100%',
@@ -143,95 +173,100 @@ function Task() {
           task={selectedTask}
         />
         <Box>
-          {tasks.map((task) => (
-            <Card
-              key={task.taskId}
-              sx={{
-                marginBottom: '10px',
-                borderRadius: '8px',
-                boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-                border: '1px solid #e0e0e0',
-                backgroundColor: '#f9f9f9',
-                overflow: 'hidden',
-                display: 'flex',
-                height: 'auto',
-                '&:hover': {
-                  boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
-                },
-              }}
-            >
-              <Box
+          {tasks
+            .filter((task) => (activeTab === 'Pending' ? !task.status : task.status))
+            .map((task) => (
+              <Card
+                key={task.taskId}
                 sx={{
-                  width: '15%',
-                  backgroundColor: '#FFBE5D',
+                  marginBottom: '10px',
+                  borderRadius: '8px',
+                  boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+                  border: '1px solid #e0e0e0',
+                  backgroundColor: '#f9f9f9',
+                  overflow: 'hidden',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '8px',
+                  height: 'auto',
+                  '&:hover': {
+                    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+                  },
                 }}
               >
-                <Checkbox
-                  checked={task.status}
-                  onChange={() => toggleTaskStatus(task.taskId, task.status)}
+                <Box
                   sx={{
-                    color: '#FFDFAE',
-                    '& .MuiSvgIcon-root': {
-                      fontSize: 28,
-                    },
-                    '&.Mui-checked': {
-                      color: '#FFDFAE',
-                    },
+                    width: '15%',
+                    backgroundColor: '#FFBE5D',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '8px',
                   }}
-                />
-              </Box>
-              <CardContent
-                sx={{
-                  flex: 1,
-                  padding: '14px 12px',
-                  paddingBottom: '12px !important',
-                }}
-              >
-                <Box display="flex" alignItems="center" justifyContent="space-between">
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333', fontSize: '1rem' }}>
-                    {task.title}
-                  </Typography>
-                  <Chip
-                    label={`${task.priority === 1 ? 'High' : task.priority === 2 ? 'Medium' : 'Low'}`}
-                    size="small"
+                >
+                  <Checkbox
+                    checked={task.status}
+                    onChange={() => toggleTaskStatus(task.taskId, task.status)}
                     sx={{
-                      width: '70px',
-                      textAlign: 'center',
-                      backgroundColor: task.priority === 1 ? '#E96559' : task.priority === 2 ? '#ffcc80' : '#a5d6a7',
-                      color: '#fff',
-                      fontWeight: 'bold',
-                      fontSize: '0.75rem',
+                      color: '#FFDFAE',
+                      '& .MuiSvgIcon-root': {
+                        fontSize: 28,
+                      },
+                      '&.Mui-checked': {
+                        color: '#FFDFAE',
+                      },
                     }}
                   />
                 </Box>
-                <Typography variant="body2" sx={{ color: '#555', marginTop: '6px', fontSize: '0.875rem' }}>
-                  {task.description}
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#757575', marginTop: '6px' }}>
-                  Deadline: {task.deadline}
-                </Typography>
-
-                <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ marginTop: '6px' }}>
-                  <Typography variant="caption" sx={{ color: task.status ? '#4caf50' : '#f44336', fontWeight: 'bold', fontSize: '0.9rem', }}>
-                    Status: {task.status ? 'Completed' : 'Pending'}
-                  </Typography>
-                  <Box>
-                    <IconButton
-                      aria-label="more options"
-                      onClick={(event) => handleMenuOpen(event, task)}
-                      sx={{ color: '#757575' }}
-                    >
-                      <MoreVert />
-                    </IconButton>
+                <CardContent
+                  sx={{
+                    flex: 1,
+                    padding: '14px 12px',
+                    paddingBottom: '12px !important',
+                  }}
+                >
+                  <Box display="flex" alignItems="center" justifyContent="space-between">
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333', fontSize: '1rem' }}>
+                      {task.title}
+                    </Typography>
+                    <Chip
+                      label={`${task.priority === 1 ? 'High' : task.priority === 2 ? 'Medium' : 'Low'}`}
+                      size="small"
+                      sx={{
+                        width: '70px',
+                        textAlign: 'center',
+                        backgroundColor: task.priority === 1 ? '#E96559' : task.priority === 2 ? '#ffcc80' : '#a5d6a7',
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        fontSize: '0.75rem',
+                      }}
+                    />
                   </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          ))}
+                  <Typography variant="body2" sx={{ color: '#555', marginTop: '6px', fontSize: '0.875rem' }}>
+                    {task.description}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#757575', marginTop: '6px' }}>
+                    Deadline: {task.deadline}
+                  </Typography>
+
+                  <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ marginTop: '6px' }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: task.status ? '#4caf50' : '#f44336', fontWeight: 'bold', fontSize: '0.9rem' }}
+                    >
+                      Status: {task.status ? 'Completed' : 'Pending'}
+                    </Typography>
+                    <Box>
+                      <IconButton
+                        aria-label="more options"
+                        onClick={(event) => handleMenuOpen(event, task)}
+                        sx={{ color: '#757575' }}
+                      >
+                        <MoreVert />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            ))}
         </Box>
       </Box>
 

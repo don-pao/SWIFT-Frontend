@@ -110,14 +110,36 @@ const QuizForm = () => {
     e.preventDefault();
     const newQuiz = {
       title,
-      flashcardSet: { setId },  // Include the selected flashcard set
+      flashcardSet: { setId: flashcardSetId  },  // Include the selected flashcard set
       questions
     };
+
+    console.log('Submitting Quiz Data:', newQuiz);
 
     if (!title || questions.length === 0 || questions.some(q => q.score < 0) || !flashcardSetId) {
       console.error('All fields are required and scores must be non-negative');
       return;
     }
+
+    if (!title) {
+      console.error('Title is missing');
+      return;
+  }
+  
+  if (questions.length === 0) {
+      console.error('No questions provided');
+      return;
+  }
+  
+  if (questions.some(q => q.score < 0)) {
+      console.error('One or more questions have negative scores');
+      return;
+  }
+  
+  if (!flashcardSetId) {
+      console.error('Flashcard Set ID is missing');
+      return;
+  }
 
     try {
       if (currentQuizId) {
@@ -142,7 +164,7 @@ const QuizForm = () => {
   const handleEditQuiz = (quiz) => {
     setTitle(quiz.title);
     setQuestions(quiz.questions);
-    setFlashcardSetId(quiz.flashcardSetId);
+    setFlashcardSetId(quiz.flashcardSet?.setId || ''); // Safely extract setId;
     setCurrentQuizId(quiz.quizId);
   };
 

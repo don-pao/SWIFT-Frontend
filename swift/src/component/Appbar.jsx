@@ -21,7 +21,7 @@ const pages = [
   { label: 'Shop', path: '/shop' },
   { label: 'Flashcard', path: '/flashcard-set-form' }
 ];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = ['Profile', 'Logout'];
 
 function ResponsiveAppBar() {
   const navigate = useNavigate();

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { userService } from './userService';
 import { useNavigate } from 'react-router-dom';
+import { usePersonalInfo } from '../../context/PersonalInfoContext'; // Import the context// Import the custom hook
 
 const UserCreation = () => {
   const navigate = useNavigate();
+  const { setUserInfo } = usePersonalInfo();  // Access setUserInfo from context
   const [isRegistering, setIsRegistering] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
@@ -12,9 +14,8 @@ const UserCreation = () => {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
-  const [isEmailValid, setIsEmailValid] = useState(true); // New state for email validation
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(true);
 
   const toggleForm = () => {
     setIsRegistering(!isRegistering);
@@ -26,7 +27,7 @@ const UserCreation = () => {
   };
 
   const toggleShowPassword = () => {
-    setShowPassword(!showPassword); // Toggle password visibility
+    setShowPassword(!showPassword);
   };
 
   const handleInputChange = async (e) => {
@@ -40,11 +41,10 @@ const UserCreation = () => {
       if (!validatePassword(value)) {
         setError("Password must be at least 8 characters long and contain at least one special character.");
       } else {
-        setError(""); // Clear error if password is valid
+        setError("");
       }
     }
 
-    // Check email uniqueness if the email field is changed
     if (name === 'email' && isRegistering) {
       try {
         const emailExists = await userService.emailExists(value);
@@ -52,25 +52,23 @@ const UserCreation = () => {
         if (emailExists) {
           setError('Email already in use.');
         } else {
-          setError(''); // Clear error if email is valid
+          setError('');
         }
       } catch (err) {
         console.error('Error checking email uniqueness:', err.message);
         setError('Could not verify email. Please try again.');
       }
     }
-
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
-  
+
     try {
       if (isRegistering) {
-         // Check email validity before registration
-         if (!isEmailValid) {
+        if (!isEmailValid) {
           setError('Please use a different email.');
           return;
         }
@@ -79,6 +77,7 @@ const UserCreation = () => {
           return;
         }
 
+        // Register the user
         await userService.register({
           username: formData.username,
           email: formData.email,
@@ -88,14 +87,17 @@ const UserCreation = () => {
         setSuccess('Registration successful! Please login.');
         setIsRegistering(false);
       } else {
+        // Login the user
         const data = await userService.login({
           username: formData.username,
           password: formData.password
         });
-  
+
         if (data.token) {
+          // Save user data to context after successful login
+          setUserInfo(data.userId, data.username, data.email); // Store user info in context
           setSuccess('Login successful!');
-          navigate('/'); // Navigate to home page after login
+          navigate('/'); // Navigate to home or dashboard page after login
         } else {
           setError('Login failed. No token provided.');
         }
@@ -208,7 +210,7 @@ const UserCreation = () => {
                 <div style={{ position: "relative", width: "92%" }}>
                   <input
                     style={{ ...inputStyle, width: "100%" }}
-                    type={showPassword ? "text" : "password"} // Show password based on toggle
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     placeholder="Password"
                     value={formData.password}
@@ -251,7 +253,7 @@ const UserCreation = () => {
                 <div style={{ position: "relative", width: "92%" }}>
                   <input
                     style={{ ...inputStyle, width: "100%" }}
-                    type={showPassword ? "text" : "password"} // Show password based on toggle
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     placeholder="Password"
                     value={formData.password}
@@ -262,7 +264,7 @@ const UserCreation = () => {
                     onClick={toggleShowPassword}
                     style={{
                       position: "absolute",
-                      right: "10px",
+                      right: "3px",
                       top: "50%",
                       transform: "translateY(-50%)",
                       cursor: "pointer",
@@ -274,28 +276,20 @@ const UserCreation = () => {
                 </div>
                 <button style={buttonStyle} type="submit">SIGN IN</button>
               </form>
-              <p style={linkStyle}>Forgot Your Password?</p>
             </div>
           )}
         </div>
 
-        {/* Right Panel */}
         <div style={panelStyle("right")}>
-          {isRegistering ? (
-            <div style={formContentStyle}>
-              <h2>Welcome new user</h2>
-              <p>Register with your personal details to use all site features.</p>
-              <p>Already have an account?</p>
-              <button style={buttonStyle} onClick={toggleForm}>LOG IN</button>
-            </div>
-          ) : (
-            <div style={formContentStyle}>
-              <h2>Hello, Friend!</h2>
-              <p>Welcome back! Please sign in to continue.</p>
-              <p>Don’t have an account?</p>
-              <button style={whiteButtonStyle} onClick={toggleForm}>CREATE NEW ACCOUNT</button>
-            </div>
-          )}
+          <h3>{isRegistering ? "Already have an account?" : "Don't have an account?"}</h3>
+          <p>
+            <span
+              style={linkStyle}
+              onClick={toggleForm}
+            >
+              {isRegistering ? "Sign In" : "Create Account"}
+            </span>
+          </p>
         </div>
       </div>
     </div>
