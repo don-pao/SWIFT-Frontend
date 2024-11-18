@@ -3,14 +3,16 @@ import axios from 'axios';
 import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
 import './Flashcard.css'; // Import the CSS
+import { useParams } from 'react-router-dom';
 import { Modal, Button, Typography, Box } from '@mui/material'; // MUI Modal components
 
 const FlashcardForm = () => {
+  const { setId } = useParams(); // Extract set_id
   const [term, setTerm] = useState('');
   const [definition, setDefinition] = useState('');
   const [flashcards, setFlashcards] = useState([]);
   const [currentFlashcardId, setCurrentFlashcardId] = useState(null);
-  const [flashcardSetId, setFlashcardSetId] = useState(null); // To store selected FlashcardSet ID
+  const [flashcardSetId, setFlashcardSetId] = useState(setId); // To store selected FlashcardSet ID
   const [flashcardSets, setFlashcardSets] = useState([]); // To store list of FlashcardSets
 
   const [openEditModal, setOpenEditModal] = useState(false); // Control the Edit modal visibility
@@ -18,6 +20,12 @@ const FlashcardForm = () => {
 
   const [openDeleteModal, setOpenDeleteModal] = useState(false); // Control the Delete modal visibility
   const [selectedFlashcardToDelete, setSelectedFlashcardToDelete] = useState(null); // Store flashcard selected for deletion
+
+  useEffect(() => {
+    if (setId) {
+      setFlashcardSetId(setId); // Ensure the setId is set
+    }
+  }, [setId]);
 
   // Fetch all flashcards
   const fetchFlashcards = async () => {
@@ -47,13 +55,13 @@ const FlashcardForm = () => {
   // Handle form submission (create or update flashcard)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newFlashcard = { term, definition, flashcardSet: { setId: flashcardSetId } };
-
-    if (!term || !definition || !flashcardSetId) {
+    const newFlashcard = { term, definition, flashcardSet: { setId } };
+  
+    if (!term || !definition) {
       console.error('All fields are required');
       return;
     }
-
+  
     try {
       if (currentFlashcardId) {
         await axios.put(`http://localhost:8080/api/flashcard/putFlashcardsDetails/${currentFlashcardId}`, newFlashcard);
@@ -66,6 +74,7 @@ const FlashcardForm = () => {
       console.error('Error submitting flashcard:', error);
     }
   };
+  
 
   // Reset form
   const resetForm = () => {
@@ -118,48 +127,40 @@ const FlashcardForm = () => {
       <div style={styles.container}>
         <div className="flashcard-header">Add a Flashcard</div>
         <form onSubmit={handleSubmit} className="flashcard-form">
-          <div className="flashcard-input-container">
-            <label>Term:</label>
-            <input
-              type="text"
-              value={term}
-              onChange={(e) => setTerm(e.target.value)}
-              placeholder="Enter term"
-              required />
-          </div>
-          <div className="flashcard-input-container">
-            <label>Definition:</label>
-            <input
-              type="text"
-              value={definition}
-              onChange={(e) => setDefinition(e.target.value)}
-              placeholder="Enter definition"
-              required />
-          </div>
-          <div className="flashcard-input-container">
-            <label>Flashcard Set:</label>
-            <select
-              value={flashcardSetId}
-              onChange={(e) => setFlashcardSetId(e.target.value)}
-              required
-            >
-              <option value="">Select Flashcard Set</option>
-              {flashcardSets.map((set) => (
-                <option key={set.setId} value={set.setId}>
-                  {set.title}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button type="submit" className="submit-button">
-            {currentFlashcardId ? 'Update Flashcard' : 'Submit Flashcard'}
-          </button>
-          {currentFlashcardId && (
-            <button type="button" className="cancel-button" onClick={resetForm}>
-              Cancel
-            </button>
-          )}
-        </form>
+  <div className="flashcard-input-container">
+    <label>Term:</label>
+    <input
+      type="text"
+      value={term}
+      onChange={(e) => setTerm(e.target.value)}
+      placeholder="Enter term"
+      required
+    />
+  </div>
+  <div className="flashcard-input-container">
+    <label>Definition:</label>
+    <input
+      type="text"
+      value={definition}
+      onChange={(e) => setDefinition(e.target.value)}
+      placeholder="Enter definition"
+      required
+    />
+  </div>
+
+  {/* Hidden input for flashcardSetId */}
+  <input type="hidden" value={flashcardSetId} />
+
+  <button type="submit" className="submit-button">
+    {currentFlashcardId ? 'Update Flashcard' : 'Submit Flashcard'}
+  </button>
+  {currentFlashcardId && (
+    <button type="button" className="cancel-button" onClick={resetForm}>
+      Cancel
+    </button>
+  )}
+</form>
+
 
         <div className="flashcard-header" style={{ marginTop: '20px' }}>Flashcards</div>
         <div className="flashcard-list">
