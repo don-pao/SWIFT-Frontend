@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { usePersonalInfo } from '../../context/PersonalInfoContext'; // Import the context hook
 
 function DailyQuest({ quests, setQuests, coins, setCoins }) {
   const [openDialog, setOpenDialog] = useState(false);
@@ -31,6 +32,10 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
   const [questToDelete, setQuestToDelete] = useState(null);
   const [editConfirmationDialogOpen, setEditConfirmationDialogOpen] = useState(false);
   const [questToEdit, setQuestToEdit] = useState(null);
+
+    // Access the user info from context
+    const { personalInfo } = usePersonalInfo();
+    const userID = personalInfo.userId;
 
   const fetchQuests = useCallback(async () => {
     try {
@@ -104,7 +109,10 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
       description: newQuestData.description,
       status: isEditMode ? undefined : 'incomplete',
       coinsEarned: newQuestData.reward,
+      user: { userID },
     };
+
+    console.log('Quest data being sent:', questData);
 
     try {
       if (isEditMode && currentQuestId) {
