@@ -160,14 +160,7 @@ const FlashcardSetForm = () => {
             />
           </div>
           {/* User dropdown can be removed now since the user ID is automatically retrieved */}
-          <div className="flashcard-input-container">
-            <label>User:</label>
-            <input
-              type="text"
-              value={userID} // Display the user ID that is automatically fetched
-              disabled
-            />
-          </div>
+          {/* Remove the User Input field */}
           <button type="submit" className="submit-button">
             {currentSetId ? 'Update Flashcard Set' : 'Submit Flashcard Set'}
           </button>
