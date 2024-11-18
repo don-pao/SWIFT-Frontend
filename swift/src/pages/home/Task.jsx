@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Typography, Button, Card, CardContent, Chip, IconButton, Modal, Checkbox } from '@mui/material';
+import { Box, Typography, Button, Card, CardContent, Chip, IconButton, Modal, Checkbox, Menu, MenuItem } from '@mui/material';
 import ToDoFormModal from './ToDoFormModal';
-import { Delete, Edit } from '@mui/icons-material';
+import { MoreVert } from '@mui/icons-material';
 
 function Task() {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -10,6 +10,8 @@ function Task() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [menuTask, setMenuTask] = useState(null);
 
   const handleOpenModal = () => {
     setSelectedTask(null);
@@ -86,6 +88,16 @@ function Task() {
     }
   };
 
+  const handleMenuOpen = (event, task) => {
+    setAnchorEl(event.currentTarget);
+    setMenuTask(task);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuTask(null);
+  };
+
   return (
     <Box sx={{ width: '30%', height: '100%' }}>
       <Typography variant="h5" sx={{ marginBottom: '10px', fontWeight: 'bold', color: '#34313A', textAlign: 'left' }}>
@@ -135,15 +147,16 @@ function Task() {
             <Card
               key={task.taskId}
               sx={{
-                marginBottom: '15px',
-                borderRadius: '12px',
-                boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+                marginBottom: '10px',
+                borderRadius: '8px',
+                boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
                 border: '1px solid #e0e0e0',
                 backgroundColor: '#f9f9f9',
                 overflow: 'hidden',
                 display: 'flex',
+                height: 'auto',
                 '&:hover': {
-                  boxShadow: '0px 6px 18px rgba(0, 0, 0, 0.2)',
+                  boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
                 },
               }}
             >
@@ -154,55 +167,65 @@ function Task() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: 1,
+                  padding: '8px',
                 }}
               >
                 <Checkbox
                   checked={task.status}
                   onChange={() => toggleTaskStatus(task.taskId, task.status)}
                   sx={{
-                    color: '#FFDFAE', // Color for the checkbox icon when unchecked
+                    color: '#FFDFAE',
                     '& .MuiSvgIcon-root': {
-                      fontSize: 32, // Increase the size of the checkbox
+                      fontSize: 28,
                     },
                     '&.Mui-checked': {
-                      color: '#FFDFAE', // Color for the checkbox icon when checked
+                      color: '#FFDFAE',
                     },
                   }}
                 />
               </Box>
-              <CardContent sx={{ flex: 1 }}>
+              <CardContent
+                sx={{
+                  flex: 1,
+                  padding: '14px 12px',
+                  paddingBottom: '12px !important',
+                }}
+              >
                 <Box display="flex" alignItems="center" justifyContent="space-between">
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333', fontSize: '1rem' }}>
                     {task.title}
                   </Typography>
                   <Chip
-                    label={`Priority: ${task.priority}`}
+                    label={`${task.priority === 1 ? 'High' : task.priority === 2 ? 'Medium' : 'Low'}`}
                     size="small"
                     sx={{
+                      width: '70px',
+                      textAlign: 'center',
                       backgroundColor: task.priority === 1 ? '#E96559' : task.priority === 2 ? '#ffcc80' : '#a5d6a7',
                       color: '#fff',
                       fontWeight: 'bold',
+                      fontSize: '0.75rem',
                     }}
                   />
                 </Box>
-                <Typography variant="body2" sx={{ color: '#555', marginTop: '8px', fontSize: '1rem' }}>
+                <Typography variant="body2" sx={{ color: '#555', marginTop: '6px', fontSize: '0.875rem' }}>
                   {task.description}
                 </Typography>
-                <Typography variant="caption" sx={{ color: '#757575', marginTop: '8px' }}>
+                <Typography variant="caption" sx={{ color: '#757575', marginTop: '6px' }}>
                   Deadline: {task.deadline}
                 </Typography>
 
-                <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ marginTop: '8px' }}>
-                  <Typography variant="body2" sx={{ color: task.status ? '#4caf50' : '#f44336', fontWeight: 'bold' }}>
+                <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ marginTop: '6px' }}>
+                  <Typography variant="caption" sx={{ color: task.status ? '#4caf50' : '#f44336', fontWeight: 'bold', fontSize: '0.9rem', }}>
                     Status: {task.status ? 'Completed' : 'Pending'}
                   </Typography>
                   <Box>
-                    <IconButton aria-label="edit task" onClick={() => handleEditTask(task)} sx={{ color: '#216ECC', marginRight: 1 }}>
-                      <Edit fontSize="small" />
-                    </IconButton>
-                    <IconButton aria-label="delete task" onClick={() => openDeleteConfirm(task)} sx={{ color: '#E03E30' }}>
-                      <Delete fontSize="small" />
+                    <IconButton
+                      aria-label="more options"
+                      onClick={(event) => handleMenuOpen(event, task)}
+                      sx={{ color: '#757575' }}
+                    >
+                      <MoreVert />
                     </IconButton>
                   </Box>
                 </Box>
@@ -211,6 +234,11 @@ function Task() {
           ))}
         </Box>
       </Box>
+
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+        <MenuItem onClick={() => { handleEditTask(menuTask); handleMenuClose(); }}>Edit</MenuItem>
+        <MenuItem onClick={() => { openDeleteConfirm(menuTask); handleMenuClose(); }}>Delete</MenuItem>
+      </Menu>
 
       <Modal
         open={deleteConfirmOpen}
