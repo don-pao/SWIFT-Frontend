@@ -7,13 +7,12 @@ import { useParams } from 'react-router-dom';
 import { Modal, Button, Typography, Box } from '@mui/material'; // MUI Modal components
 
 const FlashcardForm = () => {
-  const { setId } = useParams(); // Extract set_id
+  const { setId } = useParams(); // Extract set_id from URL
   const [term, setTerm] = useState('');
   const [definition, setDefinition] = useState('');
   const [flashcards, setFlashcards] = useState([]);
   const [currentFlashcardId, setCurrentFlashcardId] = useState(null);
   const [flashcardSetId, setFlashcardSetId] = useState(setId); // To store selected FlashcardSet ID
-  const [flashcardSets, setFlashcardSets] = useState([]); // To store list of FlashcardSets
 
   const [openEditModal, setOpenEditModal] = useState(false); // Control the Edit modal visibility
   const [selectedFlashcard, setSelectedFlashcard] = useState(null); // Store the selected flashcard to edit
@@ -23,34 +22,25 @@ const FlashcardForm = () => {
 
   useEffect(() => {
     if (setId) {
-      setFlashcardSetId(setId); // Ensure the setId is set
+      setFlashcardSetId(setId); // Ensure the setId is set when it changes
     }
   }, [setId]);
 
-  // Fetch all flashcards
+  // Fetch flashcards for the current setId
   const fetchFlashcards = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/flashcard/getAllFlashcards');
+      const response = await axios.get(`http://localhost:8080/api/flashcard/getFlashcardsBySetId/${setId}`);
       setFlashcards(response.data);
     } catch (error) {
-      console.error('Error fetching flashcards:', error);
-    }
-  };
-
-  // Fetch all flashcard sets
-  const fetchFlashcardSets = async () => {
-    try {
-      const response = await axios.get('http://localhost:8080/api/flashcardset/getAllFlashcardSet');
-      setFlashcardSets(response.data);
-    } catch (error) {
-      console.error('Error fetching flashcard sets:', error);
+      console.error('Error fetching flashcards for setId ' + setId + ':', error);
     }
   };
 
   useEffect(() => {
-    fetchFlashcardSets(); // Fetch flashcard sets on mount
-    fetchFlashcards(); // Fetch flashcards on mount
-  }, []);
+    if (setId) {
+      fetchFlashcards(); // Fetch flashcards for the current setId
+    }
+  }, [setId]); // Re-fetch flashcards whenever setId changes
 
   // Handle form submission (create or update flashcard)
   const handleSubmit = async (e) => {
@@ -68,13 +58,12 @@ const FlashcardForm = () => {
       } else {
         await axios.post('http://localhost:8080/api/flashcard/postflashcardrecord', newFlashcard);
       }
-      fetchFlashcards();
-      resetForm();
+      fetchFlashcards(); // Re-fetch flashcards after adding or updating
+      resetForm(); // Reset the form after submission
     } catch (error) {
       console.error('Error submitting flashcard:', error);
     }
   };
-  
 
   // Reset form
   const resetForm = () => {
@@ -86,29 +75,25 @@ const FlashcardForm = () => {
 
   // Handle editing flashcard
   const handleEditFlashcard = (flashcard) => {
-    // Open the edit modal and set the selected flashcard
     setSelectedFlashcard(flashcard);
-    setOpenEditModal(true); // Open the modal first
+    setOpenEditModal(true); // Open the edit modal
   };
 
   // Handle confirming the edit action
   const handleConfirmEdit = () => {
-    // Populate the form fields only when "Confirm" is clicked
     setTerm(selectedFlashcard.term);
     setDefinition(selectedFlashcard.definition);
     setFlashcardSetId(selectedFlashcard.flashcardSetId);
     setCurrentFlashcardId(selectedFlashcard.flashcardId || selectedFlashcard.id);
-
-    // Close the modal after confirming
-    setOpenEditModal(false);
+    setOpenEditModal(false); // Close the modal after confirming
   };
 
   // Handle deleting flashcard
   const handleDeleteFlashcard = async () => {
     try {
       await axios.delete(`http://localhost:8080/api/flashcard/deleteFlashcardDetails/${selectedFlashcardToDelete.flashcardId || selectedFlashcardToDelete.id}`);
-      fetchFlashcards();
-      setOpenDeleteModal(false);
+      fetchFlashcards(); // Re-fetch flashcards after deletion
+      setOpenDeleteModal(false); // Close delete modal
     } catch (error) {
       console.error('Error deleting flashcard:', error);
     }
@@ -127,40 +112,39 @@ const FlashcardForm = () => {
       <div style={styles.container}>
         <div className="flashcard-header">Add a Flashcard</div>
         <form onSubmit={handleSubmit} className="flashcard-form">
-  <div className="flashcard-input-container">
-    <label>Term:</label>
-    <input
-      type="text"
-      value={term}
-      onChange={(e) => setTerm(e.target.value)}
-      placeholder="Enter term"
-      required
-    />
-  </div>
-  <div className="flashcard-input-container">
-    <label>Definition:</label>
-    <input
-      type="text"
-      value={definition}
-      onChange={(e) => setDefinition(e.target.value)}
-      placeholder="Enter definition"
-      required
-    />
-  </div>
+          <div className="flashcard-input-container">
+            <label>Term:</label>
+            <input
+              type="text"
+              value={term}
+              onChange={(e) => setTerm(e.target.value)}
+              placeholder="Enter term"
+              required
+            />
+          </div>
+          <div className="flashcard-input-container">
+            <label>Definition:</label>
+            <input
+              type="text"
+              value={definition}
+              onChange={(e) => setDefinition(e.target.value)}
+              placeholder="Enter definition"
+              required
+            />
+          </div>
 
-  {/* Hidden input for flashcardSetId */}
-  <input type="hidden" value={flashcardSetId} />
+          {/* Hidden input for flashcardSetId */}
+          <input type="hidden" value={flashcardSetId} />
 
-  <button type="submit" className="submit-button">
-    {currentFlashcardId ? 'Update Flashcard' : 'Submit Flashcard'}
-  </button>
-  {currentFlashcardId && (
-    <button type="button" className="cancel-button" onClick={resetForm}>
-      Cancel
-    </button>
-  )}
-</form>
-
+          <button type="submit" className="submit-button">
+            {currentFlashcardId ? 'Update Flashcard' : 'Submit Flashcard'}
+          </button>
+          {currentFlashcardId && (
+            <button type="button" className="cancel-button" onClick={resetForm}>
+              Cancel
+            </button>
+          )}
+        </form>
 
         <div className="flashcard-header" style={{ marginTop: '20px' }}>Flashcards</div>
         <div className="flashcard-list">
@@ -244,7 +228,9 @@ const styles = {
   container: {
     width: '80%',
     margin: '20px auto',
-    color: '#333',
+    padding: '10px',
+    borderRadius: '10px',
+    border: '1px solid #ccc',
   },
 };
 
