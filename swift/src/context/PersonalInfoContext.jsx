@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext,useEffect  } from 'react';
 import axios from 'axios';
 
 // Create the context
@@ -16,7 +16,18 @@ export const PersonalInfoProvider = ({ children }) => {
   const setUserInfo = (userId, username, email) => {
     console.log('User Info Updated:', userId, username, email);
     setPersonalInfo({ userId, username, email });
+
+        // Save to localStorage
+        localStorage.setItem('personalInfo', JSON.stringify({ userId, username, email }));
   };
+
+    // Fetch user data from localStorage on mount
+    useEffect(() => {
+      const savedUserInfo = localStorage.getItem('personalInfo');
+      if (savedUserInfo) {
+        setPersonalInfo(JSON.parse(savedUserInfo));
+      }
+    }, []);
 
   // Example of setting user info after successful login
 const fetchUserData = async () => {

@@ -23,14 +23,14 @@ const FlashcardSetForm = () => {
   const userID = personalInfo.userId;
 
   // Fetch flashcard sets
-const fetchFlashcardSets = async () => {
-  try {
-    const response = await axios.get(`http://localhost:8080/api/flashcardset/getAllFlashcardSetByUser/${userID}`);
-    setFlashcardSets(response.data);
-  } catch (error) {
-    console.error('Error fetching flashcard sets for the current user:', error);
-  }
-};
+  const fetchFlashcardSets = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/flashcardset/getAllFlashcardSetByUser/${userID}`);
+      setFlashcardSets(response.data);
+    } catch (error) {
+      console.error('Error fetching flashcard sets for the current user:', error);
+    }
+  };
 
   // Fetch users (optional if not using the select dropdown anymore)
   const fetchUsers = async () => {
@@ -43,9 +43,10 @@ const fetchFlashcardSets = async () => {
   };
 
   useEffect(() => {
-    fetchFlashcardSets();
-    fetchUsers();
-  }, []);
+    if (userID) {
+      fetchFlashcardSets();
+    }
+  }, [userID]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
