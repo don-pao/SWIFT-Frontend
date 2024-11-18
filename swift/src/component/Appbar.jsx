@@ -29,7 +29,7 @@ function ResponsiveAppBar() {
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
   // Placeholder for coin amount
-  const [coinAmount, setCoinAmount] = React.useState(100); // Adjust this based on backend data
+  const [coinAmount] = React.useState(100); // Adjust this based on backend data "AKO gi remove ang setCoinAmount  const [coinAmount, setCoinAmount]"
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
