@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Box, Typography, Button, Card, CardContent, Chip, IconButton, Modal, Checkbox, Menu, MenuItem } from '@mui/material';
+import { Box, Typography, Button, Card, CardContent, Chip, IconButton, Modal, Checkbox,Menu, MenuItem,} from '@mui/material';
 import ToDoFormModal from './ToDoFormModal';
 import { MoreVert } from '@mui/icons-material';
+import { usePersonalInfo } from '../../context/PersonalInfoContext';
 
 function Task() {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -12,7 +13,10 @@ function Task() {
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuTask, setMenuTask] = useState(null);
-  const [activeTab, setActiveTab] = useState('Pending'); // Default tab is Pending
+  const [activeTab, setActiveTab] = useState('Pending');
+
+  const { personalInfo } = usePersonalInfo();
+  const userId = personalInfo?.userId;
 
   const handleOpenModal = () => {
     setSelectedTask(null);
@@ -24,42 +28,62 @@ function Task() {
     setSelectedTask(null);
   };
 
-  const handleSaveToDo = (newTask) => {
-    setTasks((prevTasks) => [...prevTasks, newTask].sort((a, b) => a.priority - b.priority));
+  const fetchTasks = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const response = await axios.get(`http://localhost:8080/api/task/getTasksByUser/${userId}`);
+      const sortedTasks = response.data.sort((a, b) => a.priority - b.priority);
+      setTasks(sortedTasks);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  }, [userId]);
+
+  const handleSaveToDo = (savedTask) => {
+    setTasks((prevTasks) => {
+      const taskExists = prevTasks.some((task) => task.taskId === savedTask.taskId);
+  
+      if (taskExists) {
+        // Update the existing task
+        return prevTasks.map((task) =>
+          task.taskId === savedTask.taskId ? savedTask : task
+        );
+      } else {
+        // Add a new task
+        return [...prevTasks, savedTask].sort((a, b) => a.priority - b.priority);
+      }
+    });
+  
+    handleCloseModal();
+  };
+
+  const handleUpdateTask = async (updatedTask) => {
+    try {
+      await axios.put(`http://localhost:8080/api/task/putTaskDetails?id=${updatedTask.taskId}`, updatedTask);
+      fetchTasks();
+      handleCloseModal();
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
   };
 
   const toggleTaskStatus = async (taskId, currentStatus) => {
     try {
-      const response = await axios.put(`http://localhost:8080/api/task/updateTaskStatus?id=${taskId}&status=${!currentStatus}`);
-      const updatedTask = response.data;
-
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.taskId === updatedTask.taskId ? { ...task, status: updatedTask.status } : task
-        )
-      );
+      await axios.put(`http://localhost:8080/api/task/updateTaskStatus?id=${taskId}&status=${!currentStatus}`);
+      fetchTasks();
     } catch (error) {
       console.error('Error updating task status:', error);
     }
   };
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/api/task/getAllTasks');
-        const sortedTasks = response.data.sort((a, b) => a.priority - b.priority);
-        setTasks(sortedTasks);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-      }
-    };
     fetchTasks();
-  }, []);
+  }, [fetchTasks]);
 
   const deleteTask = async (taskId) => {
     try {
       await axios.delete(`http://localhost:8080/api/task/deleteTaskDetails/${taskId}`);
-      setTasks((prevTasks) => prevTasks.filter((task) => task.taskId !== taskId));
+      fetchTasks();
       setDeleteConfirmOpen(false);
     } catch (error) {
       console.error('Error deleting task:', error);
@@ -76,19 +100,6 @@ function Task() {
     setModalOpen(true);
   };
 
-  const handleUpdateTask = async (updatedTask) => {
-    try {
-      const response = await axios.put(`http://localhost:8080/api/task/putTaskDetails?id=${updatedTask.taskId}`, updatedTask);
-      const updatedTaskData = response.data;
-      setTasks((prevTasks) =>
-        prevTasks.map((task) => (task.taskId === updatedTaskData.taskId ? updatedTaskData : task)).sort((a, b) => a.priority - b.priority)
-      );
-      handleCloseModal();
-    } catch (error) {
-      console.error('Error updating task:', error);
-    }
-  };
-
   const handleMenuOpen = (event, task) => {
     setAnchorEl(event.currentTarget);
     setMenuTask(task);
@@ -99,9 +110,19 @@ function Task() {
     setMenuTask(null);
   };
 
+  const formatDeadline = (deadline) => {
+    const date = new Date(deadline);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(date);
+  };
+
   return (
     <Box sx={{ width: '30%', height: '100%' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+      {/* Task Header */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#34313A', textAlign: 'left' }}>
           To Do's
         </Typography>
@@ -133,6 +154,7 @@ function Task() {
         </Box>
       </Box>
 
+      {/* Task List UI */}
       <Box
         sx={{
           height: '100%',
@@ -233,18 +255,19 @@ function Task() {
                       sx={{
                         width: '70px',
                         textAlign: 'center',
-                        backgroundColor: task.priority === 1 ? '#E96559' : task.priority === 2 ? '#ffcc80' : '#a5d6a7',
+                        backgroundColor:
+                          task.priority === 1 ? '#E96559' : task.priority === 2 ? '#ffcc80' : '#a5d6a7',
                         color: '#fff',
                         fontWeight: 'bold',
                         fontSize: '0.75rem',
                       }}
                     />
                   </Box>
-                  <Typography variant="body2" sx={{ color: '#555', marginTop: '6px', fontSize: '0.875rem' }}>
+                  <Typography variant="body2" sx={{ color: '#555', marginTop: '6px', fontSize: '0.875rem', fontSize: '1rem'}}>
                     {task.description}
                   </Typography>
                   <Typography variant="caption" sx={{ color: '#757575', marginTop: '6px' }}>
-                    Deadline: {task.deadline}
+                    Deadline: {formatDeadline(task.deadline)}
                   </Typography>
 
                   <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ marginTop: '6px' }}>
@@ -271,8 +294,22 @@ function Task() {
       </Box>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        <MenuItem onClick={() => { handleEditTask(menuTask); handleMenuClose(); }}>Edit</MenuItem>
-        <MenuItem onClick={() => { openDeleteConfirm(menuTask); handleMenuClose(); }}>Delete</MenuItem>
+        <MenuItem
+          onClick={() => {
+            handleEditTask(menuTask);
+            handleMenuClose();
+          }}
+        >
+          Edit
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            openDeleteConfirm(menuTask);
+            handleMenuClose();
+          }}
+        >
+          Delete
+        </MenuItem>
       </Menu>
 
       <Modal
@@ -299,7 +336,11 @@ function Task() {
             Are you sure you want to delete this task?
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'space-around', mt: 3 }}>
-            <Button variant="contained" onClick={() => setDeleteConfirmOpen(false)} sx={{ backgroundColor: '#E1DFE2', color: '#757575' }}>
+            <Button
+              variant="contained"
+              onClick={() => setDeleteConfirmOpen(false)}
+              sx={{ backgroundColor: '#E1DFE2', color: '#757575' }}
+            >
               Cancel
             </Button>
             <Button
