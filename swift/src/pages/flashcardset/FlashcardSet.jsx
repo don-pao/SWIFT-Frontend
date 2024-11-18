@@ -3,12 +3,17 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
+import { Modal, Box, Typography, Button } from '@mui/material';
+import './FlashcardSetForm.css'; // Import the CSS
 
 const FlashcardSetForm = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [flashcardSets, setFlashcardSets] = useState([]);
   const [currentSetId, setCurrentSetId] = useState(null);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [selectedSet, setSelectedSet] = useState(null);
   const navigate = useNavigate();
 
   const fetchFlashcardSets = async () => {
@@ -35,7 +40,7 @@ const FlashcardSetForm = () => {
 
     try {
       if (currentSetId) {
-        await axios.put(`http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}/addQuiz`, newFlashcardSet);
+        await axios.put(`http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}`, newFlashcardSet);
       } else {
         await axios.post('http://localhost:8080/api/flashcardset/postflashcardsetrecord', newFlashcardSet);
       }
@@ -53,37 +58,44 @@ const FlashcardSetForm = () => {
   };
 
   const handleEditFlashcardSet = (flashcardSet) => {
-    const confirmEdit = window.confirm("Are you sure you want to edit this flashcard set?");
-    if (confirmEdit) {
-      setTitle(flashcardSet.title);
-      setDescription(flashcardSet.description);
-      setCurrentSetId(flashcardSet.setId);
+    setSelectedSet(flashcardSet);
+    setOpenEditModal(true);
+  };
+
+  const handleDeleteFlashcardSet = (setId) => {
+    setSelectedSet(setId);
+    setOpenDeleteModal(true);
+  };
+
+  const handleConfirmEdit = () => {
+    if (selectedSet) {
+      setTitle(selectedSet.title);
+      setDescription(selectedSet.description);
+      setCurrentSetId(selectedSet.setId);
+      setOpenEditModal(false);
     }
   };
 
-  const handleCancel = () => {
-    resetForm(); // Reset form fields and state
-  };
-
-  const handleDeleteFlashcardSet = async (id) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this flashcard set?");
-    if (!confirmDelete) return;
-
-    try {
-      await axios.delete(`http://localhost:8080/api/flashcardset/deleteFlashcardSetDetails/${id}`);
-      fetchFlashcardSets();
-    } catch (error) {
-      console.error('Error deleting flashcard set:', error);
+  const handleConfirmDelete = async () => {
+    if (selectedSet) {
+      try {
+        await axios.delete(`http://localhost:8080/api/flashcardset/deleteFlashcardSetDetails/${selectedSet}`);
+        fetchFlashcardSets();
+      } catch (error) {
+        console.error('Error deleting flashcard set:', error);
+      }
+      setOpenDeleteModal(false);
     }
   };
+
+  const handleCancelEditModal = () => setOpenEditModal(false);
+  const handleCancelDeleteModal = () => setOpenDeleteModal(false);
 
   const handleAddFlashcard = (setId) => {
-    console.log(`Adding a flashcard to set with ID: ${setId}`);
     navigate(`/flashcard-form/${setId}`);
   };
 
   const handleAddQuiz = (setId) => {
-    console.log(`Adding a quiz to set with ID: ${setId}`);
     navigate(`/quiz-form/${setId}`);
   };
 
@@ -92,94 +104,6 @@ const FlashcardSetForm = () => {
       <ResponsiveAppBar />
       <AvatarTheme />
       <div style={styles.container}>
-        <style>
-          {`
-            .flashcard-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              background-color: #f4f4f4;
-              border-radius: 8px;
-              padding: 10px 20px;
-              font-size: 1.2rem;
-              color: #555;
-              font-weight: bold;
-            }
-            .flashcard-form {
-              background-color: #f9f9f9;
-              padding: 20px;
-              border-radius: 10px;
-              box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            }
-            .flashcard-input-container {
-              display: flex;
-              flex-direction: column;
-              margin-bottom: 15px;
-            }
-            .flashcard-input-container label {
-              font-size: 0.9rem;
-              color: #333;
-              margin-bottom: 5px;
-            }
-            .flashcard-input-container input {
-              padding: 10px;
-              border: 1px solid #ccc;
-              border-radius: 5px;
-              font-size: 0.9rem;
-            }
-            .submit-button, .cancel-button {
-              background-color: #4caf50;
-              color: #fff;
-              padding: 10px;
-              border: none;
-              border-radius: 5px;
-              cursor: pointer;
-              font-size: 1rem;
-              margin-right: 10px; /* Add margin for spacing */
-            }
-            .cancel-button {
-              background-color: #f44336; /* Red color for cancel button */
-            }
-            .flashcard-list {
-              margin-top: 20px;
-            }
-            .flashcard-item {
-              background-color: #fff;
-              padding: 15px;
-              margin-bottom: 10px;
-              border-radius: 8px;
-              box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            }
-            .flashcard-actions {
-              display: flex;
-              gap: 10px;
-            }
-            .flashcard-actions button {
-              background: none;
-              border: none;
-              color: #4caf50;
-              font-size: 0.9rem;
-              cursor: pointer;
-            }
-            .flashcard-actions button:hover {
-              text-decoration: underline;
-            }
-            .title, .description {
-              flex: 1;
-              font-size: 0.9rem;
-              color: #333;
-            }
-            .title strong, .description strong {
-              display: block;
-              font-weight: bold;
-              color: #666;
-            }
-          `}
-        </style>
-
         <div className="flashcard-header">Add a Flashcard Set</div>
         <form onSubmit={handleSubmit} className="flashcard-form">
           <div className="flashcard-input-container">
@@ -189,7 +113,8 @@ const FlashcardSetForm = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter title"
-              required />
+              required
+            />
           </div>
           <div className="flashcard-input-container">
             <label>Description:</label>
@@ -198,16 +123,12 @@ const FlashcardSetForm = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter description"
-              required />
+              required
+            />
           </div>
           <button type="submit" className="submit-button">
             {currentSetId ? 'Update Flashcard Set' : 'Submit Flashcard Set'}
           </button>
-          {currentSetId && ( // Show Cancel button only when editing
-            <button type="button" className="cancel-button" onClick={handleCancel}>
-              Cancel
-            </button>
-          )}
         </form>
 
         <div className="flashcard-header" style={{ marginTop: '20px' }}>Flashcard Sets</div>
@@ -229,6 +150,48 @@ const FlashcardSetForm = () => {
             </div>
           ))}
         </div>
+
+        {/* Edit Modal */}
+        <Modal
+          open={openEditModal}
+          onClose={handleCancelEditModal}
+          aria-labelledby="edit-modal-title"
+          aria-describedby="edit-modal-description"
+        >
+          <Box sx={modalStyle}>
+            <Typography variant="h6">Confirm Edit</Typography>
+            <Typography sx={{ mt: 2 }}>Are you sure you want to edit this flashcard set?</Typography>
+            <div style={{ marginTop: '20px' }}>
+              <Button variant="contained" color="primary" onClick={handleConfirmEdit}>
+                Confirm
+              </Button>
+              <Button variant="outlined" color="secondary" onClick={handleCancelEditModal} sx={{ ml: 2 }}>
+                Cancel
+              </Button>
+            </div>
+          </Box>
+        </Modal>
+
+        {/* Delete Modal */}
+        <Modal
+          open={openDeleteModal}
+          onClose={handleCancelDeleteModal}
+          aria-labelledby="delete-modal-title"
+          aria-describedby="delete-modal-description"
+        >
+          <Box sx={modalStyle}>
+            <Typography variant="h6">Confirm Delete</Typography>
+            <Typography sx={{ mt: 2 }}>Are you sure you want to delete this flashcard set?</Typography>
+            <div style={{ marginTop: '20px' }}>
+              <Button variant="contained" color="error" onClick={handleConfirmDelete}>
+                Delete
+              </Button>
+              <Button variant="outlined" color="secondary" onClick={handleCancelDeleteModal} sx={{ ml: 2 }}>
+                Cancel
+              </Button>
+            </div>
+          </Box>
+        </Modal>
       </div>
     </>
   );
@@ -240,6 +203,17 @@ const styles = {
     margin: '20px auto',
     color: '#333',
   },
+};
+
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  backgroundColor: 'white',
+  padding: '20px',
+  borderRadius: '8px',
+  boxShadow: 24,
 };
 
 export default FlashcardSetForm;

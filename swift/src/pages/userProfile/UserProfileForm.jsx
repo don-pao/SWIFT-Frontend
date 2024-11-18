@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import { Modal, Box, Button, Typography } from '@mui/material';
 import { userService } from '../login/userService';
 import { useNavigate } from 'react-router-dom';
 
-const UserProfile = () => {
+  const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState(''); // Password confirmation input
   const [isEditing, setIsEditing] = useState({ username: false, email: false });
-  
+
   // State to manage visibility of passwords
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -17,6 +18,15 @@ const UserProfile = () => {
   // Hover state for buttons
   const [isHoveredUpdate, setIsHoveredUpdate] = useState(false);
   const [isHoveredDelete, setIsHoveredDelete] = useState(false);
+
+   // Store original values to reset if "Cancel" is clicked
+   const [originalValues, setOriginalValues] = useState({});
+
+   // Modal Message box
+   const [modalOpen, setModalOpen] = useState(false);
+   const [modalMessage, setModalMessage] = useState('');
+   const [isConfirm, setIsConfirm] = useState(false);
+   const [onConfirm, setOnConfirm] = useState(null); // Store confirm callback
 
   const navigate = useNavigate();
 
@@ -31,25 +41,51 @@ const UserProfile = () => {
       setUser(currentUser);
       setUsername(currentUser.username);
       setEmail(currentUser.email);
+      setOriginalValues({
+        username: currentUser.username,
+        email: currentUser.email,
+      });
       console.log("Username set to:", currentUser.username); // Log username
       console.log("Email set to:", currentUser.email); // Log email
     }
   };
+
+  const openModal = (message, isConfirm = false, confirmCallback = null) => {
+    setModalMessage(message);
+    setIsConfirm(isConfirm);
+    setOnConfirm(() => confirmCallback); // Assign callback to onConfirm
+    setModalOpen(true);
+  };
   
+  const handleBack = () => {
+    // Reset fields to original values
+    setUsername(originalValues.username);
+    setEmail(originalValues.email);
+    setPassword('');
+    setConfirmPassword('');
+    setIsEditing({ username: false, email: false, password: false });
+
+    // Navigate back to the home page
+    navigate('/');
+  };
+
   const handleUsernameChange = async (event) => {
     const newUsername = event.target.value;
     setUsername(newUsername);
 
+    if (newUsername && newUsername !== user.username) {
     // Check if the username exists
-    try {
-      const exists = await userService.usernameExists(newUsername);
-      if (exists) {
-        alert('Username is already taken. Please choose a different one.');
-        // Optionally, you can reset the username to the previous value or maintain the existing one.
+      try {
+        const exists = await userService.usernameExists(newUsername);
+        if (exists) {
+          openModal('Username is already taken. Please choose a different one.');
+          setUsername(user.username); 
+          // Optionally, you can reset the username to the previous value or maintain the existing one.
+        }
+      } catch (error) {
+        console.error('Error checking username:', error);
+        openModal('Error checking username. Please try again.');
       }
-    } catch (error) {
-      console.error('Error checking username:', error);
-      alert('Error checking username. Please try again.');
     }
   };
 
@@ -62,12 +98,13 @@ const UserProfile = () => {
       try {
         const exists = await userService.emailExists(newEmail);
         if (exists) {
-          alert('Email is already taken. Please choose a different one.');
+          openModal('Email is already taken. Please choose a different one.');
+          setEmail(user.email); 
           // Optionally, reset email or keep current value
         }
       } catch (error) {
         console.error('Error checking email:', error);
-        alert('Error checking email. Please try again.');
+        openModal('Error checking email. Please try again.');
       }
     }
   };
@@ -82,96 +119,76 @@ const UserProfile = () => {
     e.preventDefault(); // Prevent default form submission
   
     if (!username || !email || !confirmPassword) {
-      alert('All fields must be filled out, including password confirmation.');
+      openModal('All fields must be filled out, including password confirmation.');
       return;
     }
   
-    if (username !== user.username) {
-      try {
-        const exists = await userService.usernameExists(username);
-        if (exists) {
-          alert('Username is already taken. Please choose a different one.');
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking username:', error.message);
-        alert('Error checking username. Please try again.');
-        return;
-      }
-    }
-
-    if (email !== user.email) {
-      try {
-        const emailExists = await userService.emailExists(email);
-        if (emailExists) {
-          alert('Email is already in use. Please use a different one.');
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking email:', error.message);
-        alert('Error checking email. Please try again.');
-        return;
-      }
-    }
+   
 
     if (password && !validatePassword(password)) {
-      alert('Password must be at least 8 characters long and must contain at least one special character.');
+      openModal('Password must be at least 8 characters long and must contain at least one special character.');
       return;
     }
   
-    const confirmation = window.confirm('Are you sure you want to save these changes?');
-    if (!confirmation) {
-      return;
-    }
+    // Replace confirmation with modal
+      openModal('Are you sure you want to save these changes?', true, async () => {
+        try {
+          // Step 1: Verify password using verifyPassword method in userService
+          const isPasswordValid = await userService.verifyPassword(user.username, confirmPassword);
+          if (!isPasswordValid) {
+            openModal('Invalid password. Please try again.');
+            return;
+          }
 
-    try {
-      // Step 1: Verify password using verifyPassword method in userService
-      const isPasswordValid = await userService.verifyPassword(user.username, confirmPassword);
-      if (!isPasswordValid) {
-        alert('Invalid password. Please try again.');
-        return;
-      }
+          // Step 2: If password is valid, proceed with the update
+          const userID = user.userId;
+          const updatedUser = { username, email };
+
+          if (password) {
+            updatedUser.password = password;
+          }
+
+          await userService.updateUserDetails(userID, updatedUser);
+
+          // Update local state to reflect changes
+          setUser(prevUser => ({ ...prevUser, username, email }));
+          setPassword(''); // Clear the password field after update
+          setConfirmPassword(''); // Clear the confirmPassword field after update
+
+          openModal('Profile updated successfully.');
+          setIsEditing({ username: false, email: false, password: false });
+
+        } catch (error) {
+          console.error("Error updating profile:", error.message);
+          openModal(error.message);
+        }
+      });
+    };
+
+    const handleDelete = () => {
+      const confirmCallback = async () => {
+        try {
+          await userService.deleteUser(user.userId);
+          userService.logout();
+          navigate('/login');
+        } catch (error) {
+          console.error(error.message);
+        }
+      };
   
-      // Step 2: If password is valid, proceed with the update
-      const userID = user.userId;
-      const updatedUser = { username, email };
+      openModal('Are you sure you want to delete your account?', true, confirmCallback);
+    };
 
-      if (password) {
-        updatedUser.password = password;
-      }
-
-      await userService.updateUserDetails(userID, updatedUser);
+    const handleModalClose = () => {
+      setModalOpen(false);
+      setIsConfirm(false);
+      setOnConfirm(null);
+    };
   
-      // Update local state to reflect changes
-      setUser(prevUser => ({ ...prevUser, username, email }));
-      setPassword(''); // Clear the password field after update
-      setConfirmPassword(''); // Clear the confirmPassword field after update
-
-      alert('Profile updated successfully.');
-      setIsEditing({ username: false, email: false, password: false });
-
-    } catch (error) {
-      console.error("Error updating profile:", error.message);
-      alert(error.message);
-    }
-  };
-
-  const handleDelete = async () => {
-    const userID = user.userId;
-    const confirmation = window.confirm('Are you sure you want to delete your account?');
-    if (confirmation) {
-      try {
-        const message = await userService.deleteUser(userID);
-        console.log(message);
-        userService.logout();
-        
-        // Redirect to Login page after account deletion
-        navigate('/login');
-      } catch (error) {
-        console.error(error.message);
-      }
-    }
-  };
+    const handleConfirm = () => {
+      if (onConfirm) onConfirm();
+      handleModalClose();
+    };
 
   const handleLogout = () => {
     userService.logout();
@@ -263,26 +280,26 @@ const UserProfile = () => {
           </div>
 
           {/* Password confirmation input */}
-          <div style={styles.profileItem}>
-            <label style={styles.profileLabel}>Current Password</label>
-            <div style={styles.passwordContainer}>
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                style={styles.profileInput}
-                placeholder="Enter current password to verify changes"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                style={styles.showHideButton}
-              >
-                {showConfirmPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
+          <div style={styles.centeredProfileItem}>
+          <label style={styles.centeredProfileLabel}>Enter current password to verify changes</label>
+          <div style={styles.centeredPasswordContainer}>
+            <input
+              type={showConfirmPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              style={styles.centeredProfileInput} // Use the new centered input style
+              placeholder="Current Password"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              style={styles.showHideButton}
+            >
+              {showConfirmPassword ? 'Hide' : 'Show'}
+            </button>
           </div>
+        </div>
 
           <button
             type="submit"
@@ -308,10 +325,82 @@ const UserProfile = () => {
         >
           Delete Account
         </button>
-        <div style={styles.logoutContainer}>
+        <div style={styles.linkContainer}>
+          <span onClick={handleBack} style={styles.backLink}>Back</span>
           <span onClick={handleLogout} style={styles.logoutLink}>Logout</span>
         </div>
       </div>
+
+       {/* Modal for alerts and confirmations */}
+       <Modal open={modalOpen} onClose={handleModalClose}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'background.paper',
+            p: 4,
+            borderRadius: 2,
+            boxShadow: 24,
+            width: 300,
+            textAlign: 'center',
+          }}
+        >
+          <Typography variant="h6" component="h2">
+            {modalMessage}
+          </Typography>
+           {isConfirm ? (
+            <>
+              <Button
+                onClick={handleConfirm}
+                sx={{
+                  mt: 2,
+                  mr: 1,
+                  bgcolor: '#4a148c',
+                  color: '#FFFFFF',
+                  '&:hover': {
+                    bgcolor: '#380d6f',
+                  },
+                }}
+                variant="contained"
+              >
+                Confirm
+              </Button>
+              <Button
+                onClick={handleModalClose}
+                sx={{
+                  mt: 2,
+                  bgcolor: '#f44336',
+                  color: '#FFFFFF',
+                  '&:hover': {
+                    bgcolor: '#d32f2f',
+                  },
+                }}
+                variant="contained"
+              >
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={handleModalClose}
+              sx={{
+                mt: 2,
+                bgcolor: '#e1bee7',
+                color: '#4a148c',
+                '&:hover': {
+                  bgcolor: '#d1a4e5',
+                },
+              }}
+              variant="contained"
+            >
+              OK
+            </Button>
+          )}
+        </Box>
+            </Modal>
+
     </div>
   );
 };
@@ -389,6 +478,35 @@ const styles = {
     cursor: 'pointer',
     fontWeight: '600',
   },
+
+  centeredProfileItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginBottom: '20px',
+  },
+  centeredProfileLabel: {
+    fontWeight: '600',
+    color: '#6a1b9a',
+    textAlign: 'center',
+    marginBottom: '8px', // Spacing between label and input
+    marginTop: '20px',
+  },
+  centeredPasswordContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px', // Space between input and button
+  },
+  centeredProfileInput: {
+    width: '100%',
+    maxWidth: '300px', // Set a max width for the input field
+    padding: '8px',
+    fontSize: '1rem',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    textAlign: 'center', // Center text inside input field
+  },
   updateBtn: {
     width: '100%',
     padding: '12px',
@@ -400,7 +518,7 @@ const styles = {
     cursor: 'pointer',
     fontWeight: 'bold',
     transition: 'background-color 0.3s ease',
-    marginTop: '20px',
+    marginTop: '10px',
     marginBottom: '10px',
   },
   deleteBtn: {
@@ -414,15 +532,23 @@ const styles = {
     cursor: 'pointer',
     transition: 'background-color 0.3s ease',
   },
-  logoutContainer: {
-    textAlign: 'right',
+  linkContainer: {
+    textAlign: 'left',
     marginTop: '20px',
+  },
+  backLink: {
+    color: '#007bff',
+    cursor: 'pointer',
+    textDecoration: 'underline',
+    fontWeight: 'bold',
+    textAlign: 'left'
   },
   logoutLink: {
     color: '#007bff',
     cursor: 'pointer',
     textDecoration: 'underline',
     fontWeight: 'bold',
+    marginLeft: '400px',
   },
 };
 
