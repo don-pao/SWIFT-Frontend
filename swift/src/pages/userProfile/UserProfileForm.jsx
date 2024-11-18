@@ -3,7 +3,7 @@ import { Modal, Box, Button, Typography } from '@mui/material';
 import { userService } from '../login/userService';
 import { useNavigate } from 'react-router-dom';
 
-  const UserProfile = () => {
+const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -122,8 +122,6 @@ import { useNavigate } from 'react-router-dom';
       openModal('All fields must be filled out, including password confirmation.');
       return;
     }
-  
-   
 
     if (password && !validatePassword(password)) {
       openModal('Password must be at least 8 characters long and must contain at least one special character.');
