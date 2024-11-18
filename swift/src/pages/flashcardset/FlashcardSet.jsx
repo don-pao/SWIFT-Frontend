@@ -14,61 +14,59 @@ const FlashcardSetForm = () => {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedSet, setSelectedSet] = useState(null);
+  const [users, setUsers] = useState([]); // State for users
+  const [selectedUserId, setSelectedUserId] = useState(''); // State for selected user ID
   const navigate = useNavigate();
 
+  // Fetch flashcard sets
   const fetchFlashcardSets = async () => {
     try {
-      // Retrieve the userID from localStorage or wherever it's stored
-      const userID = localStorage.getItem('userID');
-      if (!userID) {
-        console.error('User ID is required');
-        return;
-      }
-  
-      const response = await axios.get(`http://localhost:8080/api/flashcardset/getFlashcardSetsByUser?userID=${userID}`);
-      console.log(response.data);
-      setFlashcardSets(Array.isArray(response.data) ? response.data : []); 
+      const response = await axios.get('http://localhost:8080/api/flashcardset/getAllFlashcardSet');
+      setFlashcardSets(response.data);
     } catch (error) {
       console.error('Error fetching flashcard sets:', error);
     }
   };
-  
+
+  // Fetch users
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/user/get');
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
   useEffect(() => {
     fetchFlashcardSets();
+    fetchUsers();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Submit button clicked');
-    // Retrieve the userID (assuming it's stored in localStorage after login)
-    const userID = localStorage.getItem('userID'); // or any other method you use to store the user ID
-    
-    if (!userID) {
-      console.error('User ID is required');
-      return;
-    }
-  
-    const newFlashcardSet = { title, description, userID }; // Now that userID is available, add it to the object
-  
-    if (!title || !description) {
-      console.error('Both title and description are required');
+    const newFlashcardSet = {
+      title,
+      description,
+      user: { userID: selectedUserId }, // Send the user as an object
+    };
+
+    if (!title || !description || !selectedUserId) {
+      console.error('Title, description, and user ID are required');
       return;
     }
 
-     // Log the values before making the request
-     console.log('Submitting Flashcard Set:', newFlashcardSet);
-     console.log('User ID:', userID);
-     console.log('Request URL:', currentSetId 
-         ? `http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}?userID=${userID}`
-         : `http://localhost:8080/api/flashcardset/postflashcardsetrecord?userID=${userID}`);
-     
     try {
       if (currentSetId) {
-        // Update flashcard set (if currentSetId exists)
-        await axios.put(`http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}?userID=${userID}`, newFlashcardSet);
+        await axios.put(
+          `http://localhost:8080/api/flashcardset/putFlashcardSetDetails/${currentSetId}`,
+          newFlashcardSet
+        );
       } else {
-        // Create a new flashcard set (pass userID as query parameter)
-        await axios.post(`http://localhost:8080/api/flashcardset/postflashcardsetrecord?userID=${userID}`, newFlashcardSet);
+        await axios.post(
+          'http://localhost:8080/api/flashcardset/postflashcardsetrecord',
+          newFlashcardSet
+        );
       }
       fetchFlashcardSets();
       resetForm();
@@ -76,11 +74,11 @@ const FlashcardSetForm = () => {
       console.error('Error submitting flashcard set:', error);
     }
   };
-  
 
   const resetForm = () => {
     setTitle('');
     setDescription('');
+    setSelectedUserId(''); // Reset user ID
     setCurrentSetId(null);
   };
 
@@ -98,6 +96,7 @@ const FlashcardSetForm = () => {
     if (selectedSet) {
       setTitle(selectedSet.title);
       setDescription(selectedSet.description);
+      setSelectedUserId(selectedSet.user.userID); // Set user ID from the selected set
       setCurrentSetId(selectedSet.setId);
       setOpenEditModal(false);
     }
@@ -152,6 +151,21 @@ const FlashcardSetForm = () => {
               placeholder="Enter description"
               required
             />
+          </div>
+          <div className="flashcard-input-container">
+            <label>User:</label>
+            <select
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(e.target.value)}
+              required
+            >
+              <option value="">Select User</option>
+              {users.map((user) => (
+                <option key={user.userID} value={user.userID}>
+                  {user.username}
+                </option>
+              ))}
+            </select>
           </div>
           <button type="submit" className="submit-button">
             {currentSetId ? 'Update Flashcard Set' : 'Submit Flashcard Set'}
