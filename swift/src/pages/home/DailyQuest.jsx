@@ -14,9 +14,11 @@ import {
   DialogActions,
   TextField,
   IconButton,
+  Menu,
+  MenuItem
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { usePersonalInfo } from '../../context/PersonalInfoContext'; // Import the context hook
 
 function DailyQuest({ quests, setQuests, coins, setCoins }) {
   const [openDialog, setOpenDialog] = useState(false);
@@ -31,15 +33,21 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
   const [questToDelete, setQuestToDelete] = useState(null);
   const [editConfirmationDialogOpen, setEditConfirmationDialogOpen] = useState(false);
   const [questToEdit, setQuestToEdit] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [menuQuest, setMenuQuest] = useState(null);
+
+  // Access the user info from context
+  const { personalInfo } = usePersonalInfo();
+  const userID = personalInfo.userId;
 
   const fetchQuests = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/dailyquest/getAllDailyQuest');
+      const response = await axios.get(`http://localhost:8080/api/dailyquest/getDailyQuestByUserID/${userID}`);
       setQuests(response.data);
     } catch (error) {
       console.error('Error fetching quests:', error);
     }
-  }, [setQuests]);
+  }, [setQuests, userID]);
 
   useEffect(() => {
     fetchQuests();
@@ -104,8 +112,9 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
       description: newQuestData.description,
       status: isEditMode ? undefined : 'incomplete',
       coinsEarned: newQuestData.reward,
+      user: { userID },  // Ensure the user ID is set
     };
-
+  
     try {
       if (isEditMode && currentQuestId) {
         await axios.put(
@@ -116,11 +125,12 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
         await axios.post('http://localhost:8080/api/dailyquest/postDailyQuestRecord', questData);
       }
       handleCloseDialog();
-      fetchQuests();
+      fetchQuests(); // Fetch updated quests
     } catch (error) {
       console.error('Error saving quest:', error);
     }
   };
+  
 
   const handleOpenDeleteDialog = (quest) => {
     setQuestToDelete(quest);
@@ -141,6 +151,16 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
     } catch (error) {
       console.error('Error deleting quest:', error);
     }
+  };
+
+  const handleMenuClick = (event, quest) => {
+    setAnchorEl(event.currentTarget);
+    setMenuQuest(quest);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuQuest(null);
   };
 
   return (
@@ -226,27 +246,30 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
                     <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
                       {quest.title}
                     </Typography>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <img
-                        src="/images/themes/coin.jpg"
-                        alt="coin"
-                        style={{ width: '20px', height: '20px' }}
-                      />
-                      <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#333' }}>
-                        {quest.coinsEarned}
-                      </Typography>
-                    </Box>
+                    <IconButton onClick={(e) => handleMenuClick(e, quest)}>
+                      <MoreVertIcon />
+                    </IconButton>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl) && menuQuest?.dailyQuestId === quest.dailyQuestId}
+                      onClose={handleMenuClose}
+                    >
+                      <MenuItem onClick={() => { handleMenuClose(); setEditConfirmationDialogOpen(true); setQuestToEdit(quest); }}>Edit</MenuItem>
+                      <MenuItem onClick={() => { handleMenuClose(); handleOpenDeleteDialog(quest); }}>Delete</MenuItem>
+                    </Menu>
                   </Box>
                   <Typography variant="body2" sx={{ color: '#555', marginTop: '3px', fontSize: '1rem' }}>
                     {quest.description}
                   </Typography>
-                  <Box display="flex" alignItems="center" justifyContent="flex-end" sx={{ marginTop: '8px' }}>
-                    <IconButton onClick={() => { setEditConfirmationDialogOpen(true); setQuestToEdit(quest); }} sx={{ color: '#216ECC', marginRight: 1 }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton onClick={() => handleOpenDeleteDialog(quest)} sx={{ color: '#E03E30' }}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
+                  <Box display="flex" alignItems="center" gap={1} sx={{ marginTop: '3px' }}>
+                    <img
+                      src="/images/themes/coin.png"
+                      alt="coin"
+                      style={{ width: '20px', height: '20px' }}
+                    />
+                    <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#333' }}>
+                      {quest.coinsEarned}
+                    </Typography>
                   </Box>
                 </CardContent>
               </Card>

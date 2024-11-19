@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Modal, Box, Typography, TextField, Button, RadioGroup, FormControlLabel, Radio, FormControl, FormHelperText } from '@mui/material';
+import { usePersonalInfo } from '../../context/PersonalInfoContext';
 
 function ToDoFormModal({ open, handleClose, handleSave, task }) {
   const [formData, setFormData] = useState({
@@ -12,6 +13,9 @@ function ToDoFormModal({ open, handleClose, handleSave, task }) {
   });
 
   const [errors, setErrors] = useState({});
+
+  const { personalInfo } = usePersonalInfo(); // Access personal info
+  const userId = personalInfo.userId;
 
   // Get today's date in 'YYYY-MM-DD' format
   const today = new Date().toISOString().split("T")[0];
@@ -61,28 +65,44 @@ function ToDoFormModal({ open, handleClose, handleSave, task }) {
       setErrors(validationErrors);
       return;
     }
-
+  
     try {
       if (formData.taskId) {
-        const response = await axios.put(`http://localhost:8080/api/task/putTaskDetails?id=${formData.taskId}`, formData, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        console.log("Updated Task:", response.data);
-        handleSave(response.data);
+        // Update an existing task
+        const response = await axios.put(
+          `http://localhost:8080/api/task/putTaskDetails?id=${formData.taskId}`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        console.log('Updated Task:', response.data);
+        handleSave(response.data); // Send updated task to handleSave
       } else {
-        const response = await axios.post('http://localhost:8080/api/task/posttaskrecord', formData, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        console.log("Saved New Task:", response.data);
-        handleSave(response.data);
+        // Create a new task
+        const taskData = {
+          ...formData,
+          user: { userID: userId }, // Include user in the request body
+        };
+  
+        const response = await axios.post(
+          'http://localhost:8080/api/task/posttaskrecord',
+          taskData,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        console.log('Saved New Task:', response.data);
+        handleSave(response.data); // Send new task to handleSave
       }
+  
       handleClose();
     } catch (error) {
-      console.error("Error saving task:", error);
+      console.error('Error saving task:', error);
     }
   };
 

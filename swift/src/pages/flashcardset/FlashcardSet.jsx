@@ -25,10 +25,10 @@ const FlashcardSetForm = () => {
   // Fetch flashcard sets
   const fetchFlashcardSets = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/flashcardset/getAllFlashcardSet');
+      const response = await axios.get(`http://localhost:8080/api/flashcardset/getAllFlashcardSetByUser/${userID}`);
       setFlashcardSets(response.data);
     } catch (error) {
-      console.error('Error fetching flashcard sets:', error);
+      console.error('Error fetching flashcard sets for the current user:', error);
     }
   };
 
@@ -43,9 +43,10 @@ const FlashcardSetForm = () => {
   };
 
   useEffect(() => {
-    fetchFlashcardSets();
-    fetchUsers();
-  }, []);
+    if (userID) {
+      fetchFlashcardSets();
+    }
+  }, [userID]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -159,14 +160,7 @@ const FlashcardSetForm = () => {
             />
           </div>
           {/* User dropdown can be removed now since the user ID is automatically retrieved */}
-          <div className="flashcard-input-container">
-            <label>User:</label>
-            <input
-              type="text"
-              value={userID} // Display the user ID that is automatically fetched
-              disabled
-            />
-          </div>
+          {/* Remove the User Input field */}
           <button type="submit" className="submit-button">
             {currentSetId ? 'Update Flashcard Set' : 'Submit Flashcard Set'}
           </button>

@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import { Box, Typography, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import Task from './Task';
 import DailyQuest from './DailyQuest';
 
 function Body() {
-  const [quests, setQuests] = useState([]);  // Define quests and setQuests state
-  const [coins, setCoins] = useState(0);     // Define coins and setCoins state
+  const [quests, setQuests] = useState([]);
+  const [coins, setCoins] = useState(0);
+  const navigate = useNavigate(); // Initialize navigate
+
+  const handleAddFlashcard = () => {
+    navigate('/flashcard-set-form'); // Navigate to /flashcard-set-form
+  };
 
   return (
     <Box display="flex" justifyContent="space-between" sx={{ padding: '20px', height: '100%', backgroundColor: '#f5f5f5' }}>
-      {/* Pass quests, setQuests, coins, and setCoins as props */}
       <DailyQuest quests={quests} setQuests={setQuests} coins={coins} setCoins={setCoins} />
 
       <Box sx={{ width: '42%', height: '100%' }}>
@@ -31,6 +36,7 @@ function Body() {
         >
           <Button
             variant="contained"
+            onClick={handleAddFlashcard} // Attach click handler
             sx={{
               backgroundColor: '#E1DFE2',
               color: '#757575',
