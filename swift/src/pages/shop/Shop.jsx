@@ -31,10 +31,20 @@ function ShopUI() {
         }
     };
 
-    const handleBuyClick = (item) => {
-        // Logic for handling the purchase of an item
-        console.log(`Buying item: ${item.itemName} with cost: ${item.itemCost}`);
-        // Additional logic to manage the purchase can go here
+    const handleBuyClick = async (item) => {
+        const newInventoryItem = {
+            inventoryId: 0, // Backend will auto-generate ID
+            itemList: item.itemName,
+            totalCoins: item.itemCost,
+        };
+
+        try {
+            const response = await axios.post('http://localhost:8080/api/inventory/postInventoryRecord', newInventoryItem);
+            console.log('Item added to inventory:', response.data);
+            alert(`${item.itemName} added to your inventory!`);
+        } catch (error) {
+            console.error('Error adding item to inventory:', error);
+        }
     };
 
     return (
@@ -43,48 +53,43 @@ function ShopUI() {
             <AvatarTheme />
             <Box textAlign="center" mt={4} width="100%">
                 <h2>Shop</h2>
-                <div>
-                    
-                    <Box sx={{ maxWidth: '100%', mx: 'auto', px: 10 }}>
-                        <Grid container spacing={2} justifyContent="center">
-                            {shopItems.map(item => (
-                                <Grid item xs={12} sm={6} md={4} key={item.itemId}>
-                                    <Box mx={10}>
-                                        <Card sx={{ maxWidth: 345 }}>
-                                            <CardMedia
+                <Box sx={{ maxWidth: '100%', mx: 'auto', px: 10 }}>
+                    <Grid container spacing={2} justifyContent="center">
+                        {shopItems.map(item => (
+                            <Grid item xs={12} sm={6} md={4} key={item.itemId}>
+                                <Card sx={{ maxWidth: 345 }}>
+                                    <CardMedia
+                                        component="img"
+                                        alt={item.itemName}
+                                        height="140"
+                                        image={`${process.env.PUBLIC_URL}/images/themes/${item.itemUrl}`}
+                                    />
+                                    <CardContent sx={{ textAlign: 'center' }}>
+                                        <Typography gutterBottom variant="h5" component="div">
+                                            {item.itemName}
+                                        </Typography>
+                                        <Box display="flex" justifyContent="center" alignItems="center" sx={{ mt: 1 }}>
+                                            <Box
                                                 component="img"
-                                                alt={item.itemName}
-                                                height="140"
-                                                image={`${process.env.PUBLIC_URL}/images/themes/${item.itemUrl}`}
+                                                src={`${process.env.PUBLIC_URL}/images/themes/coin.png`}
+                                                alt="Coin"
+                                                sx={{ width: 20, height: 20, marginRight: 0.5 }}
                                             />
-                                            <CardContent sx={{ textAlign: 'center' }}>
-                                                <Typography gutterBottom variant="h5" component="div">
-                                                    {item.itemName}
-                                                </Typography>
-                                                <Box display="flex" justifyContent="center" alignItems="center" sx={{ mt: 1 }}>
-                                                    <Box
-                                                        component="img"
-                                                        src={`${process.env.PUBLIC_URL}/images/themes/coin.png`}
-                                                        alt="Coin"
-                                                        sx={{ width: 20, height: 20, marginRight: 0.5 }}
-                                                    />
-                                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                                        {item.itemCost}
-                                                    </Typography>
-                                                </Box>
-                                            </CardContent>
-                                            <CardActions>
-                                                <Button size="small" onClick={() => handleBuyClick(item)}>
-                                                    Buy
-                                                </Button>
-                                            </CardActions>
-                                        </Card>
-                                    </Box>
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </Box>
-                </div>
+                                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                                {item.itemCost}
+                                            </Typography>
+                                        </Box>
+                                    </CardContent>
+                                    <CardActions>
+                                        <Button size="small" onClick={() => handleBuyClick(item)}>
+                                            Buy
+                                        </Button>
+                                    </CardActions>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Box>
             </Box>
         </Box>
     );
