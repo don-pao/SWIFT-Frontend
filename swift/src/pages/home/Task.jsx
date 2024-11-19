@@ -1,6 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Box, Typography, Button, Card, CardContent, Chip, IconButton, Modal, Checkbox,Menu, MenuItem,} from '@mui/material';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  Card, 
+  CardContent, 
+  Chip, 
+  IconButton, 
+  Modal, 
+  Checkbox, 
+  Menu, 
+  MenuItem, 
+  Alert 
+} from '@mui/material';
 import ToDoFormModal from './ToDoFormModal';
 import { MoreVert } from '@mui/icons-material';
 import { usePersonalInfo } from '../../context/PersonalInfoContext';
@@ -14,6 +27,8 @@ function Task() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuTask, setMenuTask] = useState(null);
   const [activeTab, setActiveTab] = useState('Pending');
+  const [nearDeadlineTasks, setNearDeadlineTasks] = useState([]);
+  const [deadlineAlertOpen, setDeadlineAlertOpen] = useState(false);
 
   const { personalInfo } = usePersonalInfo();
   const userId = personalInfo?.userId;
@@ -34,15 +49,31 @@ function Task() {
       const response = await axios.get(`http://localhost:8080/api/task/getTasksByUser/${userId}`);
       const sortedTasks = response.data.sort((a, b) => a.priority - b.priority);
       setTasks(sortedTasks);
+      checkDeadlines(sortedTasks); // Check deadlines after fetching tasks
     } catch (error) {
       console.error('Error fetching tasks:', error);
     }
   }, [userId]);
 
+  const checkDeadlines = (tasks) => {
+    const today = new Date();
+    const tasksNearDeadline = tasks.filter(task => {
+      const deadline = new Date(task.deadline);
+      const timeDiff = (deadline - today) / (1000 * 60 * 60 * 24); // Difference in days
+      return timeDiff <= 2 && timeDiff >= 0 && !task.status; // Within 2 days and not completed
+    });
+
+    if (tasksNearDeadline.length > 0 && !localStorage.getItem('deadlineAlertShown')) {
+      setNearDeadlineTasks(tasksNearDeadline);
+      setDeadlineAlertOpen(true);
+      localStorage.setItem('deadlineAlertShown', 'true'); // Set flag in local storage
+    }
+  };
+
   const handleSaveToDo = (savedTask) => {
     setTasks((prevTasks) => {
       const taskExists = prevTasks.some((task) => task.taskId === savedTask.taskId);
-  
+
       if (taskExists) {
         // Update the existing task
         return prevTasks.map((task) =>
@@ -53,18 +84,8 @@ function Task() {
         return [...prevTasks, savedTask].sort((a, b) => a.priority - b.priority);
       }
     });
-  
-    handleCloseModal();
-  };
 
-  const handleUpdateTask = async (updatedTask) => {
-    try {
-      await axios.put(`http://localhost:8080/api/task/putTaskDetails?id=${updatedTask.taskId}`, updatedTask);
-      fetchTasks();
-      handleCloseModal();
-    } catch (error) {
-      console.error('Error updating task:', error);
-    }
+    handleCloseModal();
   };
 
   const toggleTaskStatus = async (taskId, currentStatus) => {
@@ -78,6 +99,8 @@ function Task() {
 
   useEffect(() => {
     fetchTasks();
+    // Clear deadline alert flag on login
+    localStorage.removeItem('deadlineAlertShown');
   }, [fetchTasks]);
 
   const deleteTask = async (taskId) => {
@@ -154,6 +177,40 @@ function Task() {
         </Box>
       </Box>
 
+      {/* Deadline Alert Modal */}
+      <Modal
+        open={deadlineAlertOpen}
+        onClose={() => setDeadlineAlertOpen(false)}
+        aria-labelledby="deadline-alert-modal"
+        aria-describedby="deadline-alert-description"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Tasks Near Deadline!
+          </Typography>
+          {nearDeadlineTasks.map((task) => (
+            <Alert severity="warning" key={task.taskId} sx={{ mb: 2 }}>
+              Task <strong>{task.title}</strong> is due on {formatDeadline(task.deadline)}.
+            </Alert>
+          ))}
+          <Button variant="contained" onClick={() => setDeadlineAlertOpen(false)} sx={{ mt: 2 }}>
+            Dismiss
+          </Button>
+        </Box>
+      </Modal>
+
       {/* Task List UI */}
       <Box
         sx={{
@@ -191,9 +248,10 @@ function Task() {
         <ToDoFormModal
           open={isModalOpen}
           handleClose={handleCloseModal}
-          handleSave={selectedTask ? handleUpdateTask : handleSaveToDo}
+          handleSave={handleSaveToDo}
           task={selectedTask}
         />
+
         <Box>
           {tasks
             .filter((task) => (activeTab === 'Pending' ? !task.status : task.status))
@@ -263,7 +321,7 @@ function Task() {
                       }}
                     />
                   </Box>
-                  <Typography variant="body2" sx={{ color: '#555', marginTop: '6px', fontSize: '0.875rem', fontSize: '1rem'}}>
+                  <Typography variant="body2" sx={{ color: '#555', marginTop: '6px', fontSize: '0.875rem' }}>
                     {task.description}
                   </Typography>
                   <Typography variant="caption" sx={{ color: '#757575', marginTop: '6px' }}>

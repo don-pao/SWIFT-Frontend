@@ -5,8 +5,11 @@ import AvatarTheme from '../../component/Theme';
 import { Modal, Box, Typography, Button } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import './Quiz.css'; // Import the CSS
+import { usePersonalInfo } from '../../context/PersonalInfoContext'; // Import the context hook
 
 const QuizForm = () => {
+  const { personalInfo } = usePersonalInfo(); // Now inside the component
+  const userID = personalInfo.userId; // Get the userID directly here
   const { setId } = useParams(); // Extract set_id
   const [title, setTitle] = useState('');
   const [questions, setQuestions] = useState([
@@ -19,6 +22,8 @@ const QuizForm = () => {
   const [openEditModal, setOpenEditModal] = React.useState(false);
   const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
   const [selectedQuiz, setSelectedQuiz] = React.useState(null); // Holds the quiz being edited or deleted
+
+  
   
   useEffect(() => {
     if (setId) {
@@ -55,8 +60,13 @@ const QuizForm = () => {
   };
 
   const fetchQuizzes = async () => {
+    if (!userID) {
+      console.error('User ID is not available');
+      return;
+    }
+
     try {
-      const response = await axios.get('http://localhost:8080/api/quiz/getAllQuizzes');
+      const response = await axios.get(`http://localhost:8080/api/quiz/getQuizByUserId/${userID}`);
       setQuizzes(response.data);
     } catch (error) {
       console.error('Error fetching quizzes:', error);
