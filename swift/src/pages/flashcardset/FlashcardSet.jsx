@@ -139,32 +139,42 @@ const FlashcardSetForm = () => {
       <div style={styles.container}>
         <div className="flashcard-header">Add a Flashcard Set</div>
         <form onSubmit={handleSubmit} className="flashcard-form">
-          <div className="flashcard-input-container">
-            <label>Title:</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter title"
-              required
-            />
-          </div>
-          <div className="flashcard-input-container">
-            <label>Description:</label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter description"
-              required
-            />
-          </div>
-          {/* User dropdown can be removed now since the user ID is automatically retrieved */}
-          {/* Remove the User Input field */}
-          <button type="submit" className="submit-button">
-            {currentSetId ? 'Update Flashcard Set' : 'Submit Flashcard Set'}
-          </button>
-        </form>
+  <div className="flashcard-input-container">
+    <label>Title:</label>
+    <input
+      type="text"
+      value={title}
+      onChange={(e) => setTitle(e.target.value)}
+      placeholder="Enter title"
+      required
+    />
+  </div>
+  <div className="flashcard-input-container">
+    <label>Description:</label>
+    <input
+      type="text"
+      value={description}
+      onChange={(e) => setDescription(e.target.value)}
+      placeholder="Enter description"
+      required
+    />
+  </div>
+  <div className="form-buttons">
+    <button type="submit" className="submit-button">
+      {currentSetId ? 'Update Flashcard Set' : 'Submit Flashcard Set'}
+    </button>
+    {currentSetId && (
+      <button
+        type="button"
+        className="cancel-button"
+        onClick={resetForm}
+        style={{ marginLeft: '10px' }}
+      >
+        Cancel
+      </button>
+    )}
+  </div>
+</form>
 
         <div className="flashcard-header" style={{ marginTop: '20px' }}>Flashcard Sets</div>
         <div className="flashcard-list">
