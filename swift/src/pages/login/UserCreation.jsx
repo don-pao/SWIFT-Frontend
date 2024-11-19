@@ -99,7 +99,7 @@ const UserCreation = () => {
           // Save user data to context after successful login
           setUserInfo(data.userId, data.username, data.email); // Store user info in context
           setSuccess('Login successful!');
-          navigate('/'); // Navigate to home or dashboard page after login
+          navigate('/home'); // Navigate to home or dashboard page after login
         } else {
           setError('Login failed. No token provided.');
         }
