@@ -16,7 +16,7 @@ import { userService } from '../pages/login/userService';
 import { Link, useNavigate } from 'react-router-dom';
 
 const pages = [
-  { label: 'Home', path: '/' },
+  { label: 'Home', path: '/home' },
   { label: 'Inventory', path: '/inventory' },
   { label: 'Shop', path: '/shop' },
   { label: 'Flashcard', path: '/flashcard-set-form' }

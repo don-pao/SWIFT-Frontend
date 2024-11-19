@@ -66,7 +66,7 @@ const UserProfile = () => {
     setIsEditing({ username: false, email: false, password: false });
 
     // Navigate back to the home page
-    navigate('/');
+    navigate('/home');
   };
 
   const handleUsernameChange = async (event) => {

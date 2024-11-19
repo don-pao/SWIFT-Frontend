@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { PersonalInfoProvider } from './context/PersonalInfoContext';  // Import the context provider
 import Home from './pages/home/Home';
 import Login from './pages/login/UserCreation';
@@ -16,7 +16,9 @@ function App() {
     <PersonalInfoProvider>  {/* Wrap the app with the context provider */}
       <Router>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/user-profile" element={<UserProfile />} />
           <Route path="/flashcard-set-form" element={<FlashcardSetForm />} />
