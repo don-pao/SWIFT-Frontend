@@ -84,7 +84,7 @@ const UserCreation = () => {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-          progressData: 0
+          coinBalance: 0
         });
         setSuccess('Registration successful! Please login.');
         setIsRegistering(false);
