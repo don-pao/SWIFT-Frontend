@@ -29,23 +29,23 @@ function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [coinAmount, setCoinAmount] = useState(0);
-  const [userId, setUserId] = useState(null); // State to hold userId
+  const [userID, setUserID] = useState(null); // State to hold userId
 
   useEffect(() => {
     const currentUser = userService.getCurrentUser(); // Get current user
-    if (currentUser && currentUser.userId) {
-      setUserId(currentUser.userId); // Set userId state
+    if (currentUser && currentUser.userID) {
+      setUserID(currentUser.userID); // Set userId state
     } else {
       console.error('No user found');
     }
   }, []);
 
   useEffect(() => {
-    if (!userId) return; // Skip fetching if userId is not available
+    if (!userID) return; // Skip fetching if userId is not available
 
     const fetchCoinAmount = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/inventory/user/${userId}`);
+        const response = await axios.get(`http://localhost:8080/api/inventory/user/${userID}`);
         setCoinAmount(response.data.totalCoins); // Adjust according to your response structure
       } catch (error) {
         console.error('Error fetching coin amount:', error);
@@ -53,7 +53,7 @@ function ResponsiveAppBar() {
     };
 
     fetchCoinAmount();
-  }, [userId]); // Trigger fetch when userId changes
+  }, [userID]); // Trigger fetch when userId changes
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);

@@ -24,7 +24,14 @@ function InventoryUI() {
         try {
             const response = await axios.get('http://localhost:8080/api/inventory/getAllInventory');
             if (Array.isArray(response.data)) {
-                setInventoryItems(response.data);
+                const updatedInventory = response.data.map((item, index) => {
+                    return {
+                        ...item,
+                        itemUrl: index === 0 && !item.itemUrl ? 'theme.png' : item.itemUrl, // Default 'theme.png' for first card
+                        totalCoins: item.totalCoins || 0, // Default 0 if totalCoins is missing
+                    };
+                });
+                setInventoryItems(updatedInventory);
             } else {
                 console.error('Expected an array, but got:', response.data);
             }
@@ -56,7 +63,7 @@ function InventoryUI() {
                                         component="img"
                                         alt={item.itemList}
                                         height="140"
-                                        image={`${process.env.PUBLIC_URL}/images/themes/${item.itemUrl}`} // Directly use itemUrl
+                                        image={`${process.env.PUBLIC_URL}/images/themes/${item.itemUrl || 'theme.png'}`} // Fallback to theme.png
                                     />
                                     <CardContent sx={{ textAlign: 'center' }}>
                                         <Typography gutterBottom variant="h5" component="div">
@@ -73,7 +80,7 @@ function InventoryUI() {
                                             onClick={() =>
                                                 handleThemeApply(
                                                     item.itemList,
-                                                    `${process.env.PUBLIC_URL}/images/themes/${item.itemUrl}`
+                                                    `${process.env.PUBLIC_URL}/images/themes/${item.itemUrl || 'theme.png'}`
                                                 )
                                             }
                                             disabled={currentTheme === item.itemList}
