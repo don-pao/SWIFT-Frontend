@@ -36,18 +36,23 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuQuest, setMenuQuest] = useState(null);
 
-  // Access the user info from context
-  const { personalInfo } = usePersonalInfo();
-  const userID = personalInfo.userId;
+ // Access the user info from context
+const { personalInfo } = usePersonalInfo();
+const userID = personalInfo.userId;
 
-  const fetchQuests = useCallback(async () => {
-    try {
-      const response = await axios.get(`http://localhost:8080/api/dailyquest/getDailyQuestByUserID/${userID}`);
-      setQuests(response.data);
-    } catch (error) {
-      console.error('Error fetching quests:', error);
-    }
-  }, [setQuests, userID]);
+// Fetch Quests for the logged-in user
+const fetchQuests = useCallback(async () => {
+  if (!userID) {
+    return; // Ensure userID is present before fetching quests
+  }
+
+  try {
+    const response = await axios.get(`http://localhost:8080/api/dailyquest/getDailyQuestByUserID/${userID}`);
+    setQuests(response.data);
+  } catch (error) {
+    console.error('Error fetching quests:', error);
+  }
+}, [setQuests, userID]);
 
   useEffect(() => {
     fetchQuests();
@@ -57,13 +62,13 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
     try {
       const quest = quests.find((quest) => quest.dailyQuestId === id);
       const updatedQuest = { ...quest, status: quest.status === 'completed' ? 'incomplete' : 'completed' };
-
+  
       await axios.put(`http://localhost:8080/api/dailyquest/putDailyQuestDetails?id=${id}`, updatedQuest);
-
+  
       setQuests((prevQuests) =>
         prevQuests.map((quest) => (quest.dailyQuestId === id ? updatedQuest : quest))
       );
-
+  
       if (quest.status === 'incomplete') {
         setCoins((prevCoins) => prevCoins + quest.coinsEarned);
       } else {
@@ -72,7 +77,7 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
     } catch (error) {
       console.error('Error updating quest:', error);
     }
-  };
+  };  
 
   const handleOpenDialog = (quest = null) => {
     if (quest) {
@@ -112,7 +117,7 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
       description: newQuestData.description,
       status: isEditMode ? undefined : 'incomplete',
       coinsEarned: newQuestData.reward,
-      user: { userID },  // Ensure the user ID is set
+      user: { userID },  // Ensure the user ID is correctly set
     };
   
     try {
@@ -130,7 +135,6 @@ function DailyQuest({ quests, setQuests, coins, setCoins }) {
       console.error('Error saving quest:', error);
     }
   };
-  
 
   const handleOpenDeleteDialog = (quest) => {
     setQuestToDelete(quest);

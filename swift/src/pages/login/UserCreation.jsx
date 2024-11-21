@@ -66,10 +66,10 @@ const UserCreation = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
-
+  
     try {
       if (isRegistering) {
-         // Check email validity before registration
+        // Check email validity before registration
         if (!isEmailValid) {
           setError('Please use a different email.');
           return;
@@ -78,28 +78,38 @@ const UserCreation = () => {
           setError('Password must be at least 8 characters long and contain at least one special character.');
           return;
         }
-
+  
         // Register the user
-        await userService.register({
+        const newUser = await userService.register({
           username: formData.username,
           email: formData.email,
           password: formData.password,
-          progressData: 0
+          coinBalance: 0,
+          progress_data: 0 // Adding a default value for progress_data to avoid SQL errors
         });
+  
         setSuccess('Registration successful! Please login.');
-        setIsRegistering(false);
+  
+        // Save user data to context after successful registration
+        setUserInfo(newUser.userId, newUser.username, newUser.email); // Store user info in context
+  
+        // Redirect user to the home route after registration
+        navigate('/home');
+  
       } else {
         // Login the user
         const data = await userService.login({
           username: formData.username,
           password: formData.password
         });
-
+  
         if (data.token) {
           // Save user data to context after successful login
           setUserInfo(data.userId, data.username, data.email); // Store user info in context
           setSuccess('Login successful!');
-          navigate('/'); // Navigate to home or dashboard page after login
+          
+          // Redirect user to the home route after login
+          navigate('/home');
         } else {
           setError('Login failed. No token provided.');
         }
@@ -108,6 +118,7 @@ const UserCreation = () => {
       setError(err.message || 'An error occurred');
     }
   };
+  
 
   const containerStyle = {
     display: "flex",
