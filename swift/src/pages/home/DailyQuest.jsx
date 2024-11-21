@@ -3,168 +3,68 @@ import axios from 'axios';
 import {
   Box,
   Typography,
-  Button,
   Grid,
   Card,
   CardContent,
   Checkbox,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  IconButton,
-  Menu,
-  MenuItem
+  Button,
 } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { usePersonalInfo } from '../../context/PersonalInfoContext'; // Import the context hook
 
-function DailyQuest({ quests, setQuests, coins, setCoins }) {
-  const [openDialog, setOpenDialog] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [currentQuestId, setCurrentQuestId] = useState(null);
-  const [newQuestData, setNewQuestData] = useState({
-    title: '',
-    description: '',
-    reward: 0,
+function DailyQuest({ quests, setQuests, coins, setCoins, tasks = [] }) {
+  // Access the user info from context
+  const { personalInfo } = usePersonalInfo();
+  const userID = personalInfo.userId;
+
+  // Get today's date in a readable format
+  const todayDate = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   });
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [questToDelete, setQuestToDelete] = useState(null);
-  const [editConfirmationDialogOpen, setEditConfirmationDialogOpen] = useState(false);
-  const [questToEdit, setQuestToEdit] = useState(null);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [menuQuest, setMenuQuest] = useState(null);
 
- // Access the user info from context
-const { personalInfo } = usePersonalInfo();
-const userID = personalInfo.userId;
+  // Fetch Quests for the logged-in user
+  const fetchQuests = useCallback(async () => {
+    if (!userID) {
+      return; // Ensure userID is present before fetching quests
+    }
 
-// Fetch Quests for the logged-in user
-const fetchQuests = useCallback(async () => {
-  if (!userID) {
-    return; // Ensure userID is present before fetching quests
-  }
-
-  try {
-    const response = await axios.get(`http://localhost:8080/api/dailyquest/getDailyQuestByUserID/${userID}`);
-    setQuests(response.data);
-  } catch (error) {
-    console.error('Error fetching quests:', error);
-  }
-}, [setQuests, userID]);
+    try {
+      const response = await axios.get(`http://localhost:8080/api/dailyquest/getDailyQuestByUserID/${userID}`);
+      setQuests(response.data);
+    } catch (error) {
+      console.error('Error fetching quests:', error);
+    }
+  }, [setQuests, userID]);
 
   useEffect(() => {
     fetchQuests();
   }, [fetchQuests]);
 
-  const handleQuestToggle = async (id) => {
-    try {
-      const quest = quests.find((quest) => quest.dailyQuestId === id);
-      const updatedQuest = { ...quest, status: quest.status === 'completed' ? 'incomplete' : 'completed' };
-  
-      await axios.put(`http://localhost:8080/api/dailyquest/putDailyQuestDetails?id=${id}`, updatedQuest);
-  
-      setQuests((prevQuests) =>
-        prevQuests.map((quest) => (quest.dailyQuestId === id ? updatedQuest : quest))
-      );
-  
-      if (quest.status === 'incomplete') {
-        setCoins((prevCoins) => prevCoins + quest.coinsEarned);
-      } else {
-        setCoins((prevCoins) => prevCoins - quest.coinsEarned);
-      }
-    } catch (error) {
-      console.error('Error updating quest:', error);
-    }
-  };  
+  // Automatically update quest completion based on specific requirements
+  useEffect(() => {
+    if (Array.isArray(tasks) && Array.isArray(quests)) {
+      const completedTasksCount = tasks.filter((task) => task.status === 1).length;
 
-  const handleOpenDialog = (quest = null) => {
-    if (quest) {
-      setNewQuestData({
-        title: quest.title,
-        description: quest.description,
-        reward: quest.coinsEarned,
+      // Check if a quest like "Complete 5 to do's today" exists and mark it as completed if requirements are met
+      quests.forEach((quest) => {
+        if (quest.title === "Complete 5 to do's today" && completedTasksCount >= 5 && quest.status === 'incomplete') {
+          updateQuestStatus(quest.dailyQuestId, 'completed');
+        }
       });
-      setIsEditMode(true);
-      setCurrentQuestId(quest.dailyQuestId);
-    } else {
-      setNewQuestData({
-        title: '',
-        description: '',
-        reward: 0,
+    }
+  }, [tasks, quests]);
+
+  // Handle quest status update
+  const updateQuestStatus = async (questId, newStatus) => {
+    try {
+      await axios.put(`http://localhost:8080/api/dailyquest/putDailyQuestDetails?id=${questId}`, {
+        status: newStatus,
       });
-      setIsEditMode(false);
-      setCurrentQuestId(null);
-    }
-    setOpenDialog(true);
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setNewQuestData({
-      title: '',
-      description: '',
-      reward: 0,
-    });
-    setIsEditMode(false);
-    setCurrentQuestId(null);
-  };
-
-  const handleSaveQuest = async () => {
-    const questData = {
-      title: newQuestData.title,
-      description: newQuestData.description,
-      status: isEditMode ? undefined : 'incomplete',
-      coinsEarned: newQuestData.reward,
-      user: { userID },  // Ensure the user ID is correctly set
-    };
-  
-    try {
-      if (isEditMode && currentQuestId) {
-        await axios.put(
-          `http://localhost:8080/api/dailyquest/putDailyQuestDetails?id=${currentQuestId}`,
-          questData
-        );
-      } else {
-        await axios.post('http://localhost:8080/api/dailyquest/postDailyQuestRecord', questData);
-      }
-      handleCloseDialog();
-      fetchQuests(); // Fetch updated quests
+      fetchQuests(); // Refresh quests after updating status
     } catch (error) {
-      console.error('Error saving quest:', error);
+      console.error('Error updating quest status:', error);
     }
-  };
-
-  const handleOpenDeleteDialog = (quest) => {
-    setQuestToDelete(quest);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setDeleteDialogOpen(false);
-    setQuestToDelete(null);
-  };
-
-  const handleDeleteQuest = async () => {
-    if (!questToDelete) return;
-    try {
-      await axios.delete(`http://localhost:8080/api/dailyquest/deleteDailyQuestDetails/${questToDelete.dailyQuestId}`);
-      setQuests((prevQuests) => prevQuests.filter((quest) => quest.dailyQuestId !== questToDelete.dailyQuestId));
-      handleCloseDeleteDialog();
-    } catch (error) {
-      console.error('Error deleting quest:', error);
-    }
-  };
-
-  const handleMenuClick = (event, quest) => {
-    setAnchorEl(event.currentTarget);
-    setMenuQuest(quest);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setMenuQuest(null);
   };
 
   return (
@@ -185,9 +85,10 @@ const fetchQuests = useCallback(async () => {
           boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.1)',
         }}
       >
+        {/* Date Display Button Styled but Disabled */}
         <Button
           variant="contained"
-          onClick={() => handleOpenDialog()}
+          disabled // Make the button non-clickable
           sx={{
             backgroundColor: '#E1DFE2',
             color: '#757575',
@@ -200,9 +101,10 @@ const fetchQuests = useCallback(async () => {
             width: '100%',
             justifyContent: 'flex-start',
             marginBottom: '20px',
+            cursor: 'default', // Changes cursor to indicate that it's not clickable
           }}
         >
-          Add a Quest
+          {todayDate}
         </Button>
 
         <Grid container direction="column" spacing={3}> {/* Adjusted spacing to ensure uniform gap */}
@@ -233,7 +135,7 @@ const fetchQuests = useCallback(async () => {
                 >
                   <Checkbox
                     checked={quest.status === 'completed'}
-                    onChange={() => handleQuestToggle(quest.dailyQuestId)}
+                    disabled // Disable user interaction
                     sx={{
                       color: '#ffffff',
                       '& .MuiSvgIcon-root': {
@@ -250,17 +152,6 @@ const fetchQuests = useCallback(async () => {
                     <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
                       {quest.title}
                     </Typography>
-                    <IconButton onClick={(e) => handleMenuClick(e, quest)}>
-                      <MoreVertIcon />
-                    </IconButton>
-                    <Menu
-                      anchorEl={anchorEl}
-                      open={Boolean(anchorEl) && menuQuest?.dailyQuestId === quest.dailyQuestId}
-                      onClose={handleMenuClose}
-                    >
-                      <MenuItem onClick={() => { handleMenuClose(); setEditConfirmationDialogOpen(true); setQuestToEdit(quest); }}>Edit</MenuItem>
-                      <MenuItem onClick={() => { handleMenuClose(); handleOpenDeleteDialog(quest); }}>Delete</MenuItem>
-                    </Menu>
                   </Box>
                   <Typography variant="body2" sx={{ color: '#555', marginTop: '3px', fontSize: '1rem' }}>
                     {quest.description}
@@ -281,69 +172,6 @@ const fetchQuests = useCallback(async () => {
           ))}
         </Grid>
       </Box>
-
-      {/* Dialog for Adding or Editing a Quest */}
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>{isEditMode ? 'Edit Quest' : 'Add New Quest'}</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Title"
-            fullWidth
-            margin="dense"
-            value={newQuestData.title}
-            onChange={(e) => setNewQuestData({ ...newQuestData, title: e.target.value })}
-          />
-          <TextField
-            label="Description"
-            fullWidth
-            margin="dense"
-            value={newQuestData.description}
-            onChange={(e) => setNewQuestData({ ...newQuestData, description: e.target.value })}
-          />
-          <TextField
-            label="Coins Earned"
-            type="number"
-            fullWidth
-            margin="dense"
-            value={newQuestData.reward}
-            onChange={(e) => setNewQuestData({ ...newQuestData, reward: parseInt(e.target.value, 10) })}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} sx={{ backgroundColor: '#E1DFE2', color: '#757575' }}>
-            Cancel
-          </Button>
-          <Button onClick={handleSaveQuest} sx={{ backgroundColor: '#216ECC', color: '#ffffff', '&:hover': { backgroundColor: '#1a5dab' } }}>
-            {isEditMode ? 'Save' : 'Add'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Dialog for Deleting a Quest */}
-      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
-        <DialogTitle>Are you sure you want to delete this record?</DialogTitle>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} sx={{ backgroundColor: '#E1DFE2', color: '#757575' }}>
-            No
-          </Button>
-          <Button onClick={handleDeleteQuest} sx={{ backgroundColor: '#E03E30', color: '#ffffff', '&:hover': { backgroundColor: '#cc352a' } }}>
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Confirmation Dialog for Editing a Quest */}
-      <Dialog open={editConfirmationDialogOpen} onClose={() => setEditConfirmationDialogOpen(false)}>
-        <DialogTitle>Are you sure you want to update this record?</DialogTitle>
-        <DialogActions>
-          <Button onClick={() => setEditConfirmationDialogOpen(false)} sx={{ backgroundColor: '#E1DFE2', color: '#757575' }}>
-            Cancel
-          </Button>
-          <Button onClick={() => { setEditConfirmationDialogOpen(false); handleOpenDialog(questToEdit); }} sx={{ backgroundColor: '#216ECC', color: '#ffffff', '&:hover': { backgroundColor: '#1a5dab' } }}>
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }
