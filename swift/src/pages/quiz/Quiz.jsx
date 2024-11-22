@@ -40,10 +40,11 @@ const QuizForm = () => {
   const handleCancelEditModal = () => setOpenEditModal(false);
   const handleCancelDeleteModal = () => setOpenDeleteModal(false);
 
-  const handleOpenDeleteModal = (quizId) => {
-    setSelectedQuiz(quizId);
+  const handleOpenDeleteModal = (quiz) => {
+    setSelectedQuiz(quiz);  // Set the whole quiz object
     setOpenDeleteModal(true);
   };
+  
   
   const handleConfirmEdit = () => {
     if (selectedQuiz) {
@@ -52,13 +53,26 @@ const QuizForm = () => {
     }
   };
   
-  const handleConfirmDelete = () => {
-    if (selectedQuiz) {
-      handleDeleteQuiz(selectedQuiz);
-      setOpenDeleteModal(false);
+  const handleConfirmDelete = async () => {
+    if (selectedQuiz && selectedQuiz.quizId) {
+      try {
+        // Optimistically update the UI by removing the selected quiz
+        setQuizzes((prevQuizzes) => prevQuizzes.filter((quiz) => quiz.quizId !== selectedQuiz.quizId));
+        
+        // Perform the deletion on the backend
+        await handleDeleteQuiz(selectedQuiz.quizId);
+  
+        // Close the modal
+        setOpenDeleteModal(false);
+      } catch (error) {
+        console.error('Error deleting quiz:', error);
+        // Optionally re-fetch quizzes or notify the user of the failure
+        fetchQuizzes(); 
+      }
     }
   };
-
+  
+  
   const fetchQuizzes = async () => {
     if (!userID) {
       console.error('User ID is not available');
@@ -181,7 +195,7 @@ const QuizForm = () => {
   const handleDeleteQuiz = async (quizId) => {
     try {
       await axios.delete(`http://localhost:8080/api/quiz/deleteQuizDetails/${quizId}`);
-      fetchQuizzes();
+      fetchQuizzes();  // Refresh the list after deletion
     } catch (error) {
       console.error('Error deleting quiz:', error);
     }
@@ -285,7 +299,7 @@ const QuizForm = () => {
             </div>
             <div className="quiz-actions">
               <button onClick={() => handleOpenEditModal(quiz)}>Edit</button>
-              <button onClick={() => handleOpenDeleteModal(quiz.quizId)}>Delete</button>
+              <button onClick={() => handleOpenDeleteModal(quiz)}>Delete</button>
             </div>
           </div>
         ))}
