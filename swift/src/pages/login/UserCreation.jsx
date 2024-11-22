@@ -94,7 +94,7 @@ const UserCreation = () => {
         setUserInfo(newUser.userId, newUser.username, newUser.email); // Store user info in context
   
         // Redirect user to the home route after registration
-        navigate('/home');
+        setIsRegistering(false);
   
       } else {
         // Login the user
