@@ -10,8 +10,13 @@ import FlashcardSetForm from './pages/flashcardset/FlashcardSet';
 import ShopUI from './pages/shop/ShopAdmin';
 import Shop from './pages/shop/Shop';
 import InventoryUI from './pages/shop/Inventory';
+import AdminLoginAndRegister from './pages/admin/AdminLoginAndRegister'; // Import Admin Login/Registration component
+import AdminDashboard from './pages/admin/AdminDashboard'; // Import Admin Dashboard component
 
 function App() {
+
+  const isAdminAuthenticated = () => !!localStorage.getItem('adminToken');
+
   return (
     <PersonalInfoProvider>  {/* Wrap the app with the context provider */}
       <Router>
@@ -27,6 +32,19 @@ function App() {
           <Route path="/shop" element={<Shop />} />
           <Route path="/shopadmin" element={<ShopUI />} />
           <Route path='/inventory' element={<InventoryUI />} />
+          {/* Admin Routes */}
+          <Route
+            path="/admin/login"
+            element={
+              isAdminAuthenticated() ? <Navigate to="/admin/dashboard" /> : <AdminLoginAndRegister />
+            }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              isAdminAuthenticated() ? <AdminDashboard /> : <Navigate to="/admin/login" />
+            }
+          />
         </Routes>
       </Router>
     </PersonalInfoProvider>

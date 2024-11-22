@@ -184,13 +184,6 @@ const UserCreation = () => {
     color: "#63625d", // Text color for specific buttons
   };
 
-  const linkStyle = {
-    marginTop: "1rem",
-    color: "#007bff",
-    cursor: "pointer",
-    textDecoration: "underline",
-  };
-
   return (
     <div style={containerStyle}>
       <div style={formContainerStyle}>

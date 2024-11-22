@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import ResponsiveAppBar from '../../component/Appbar';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import AvatarTheme from '../../component/Theme';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
@@ -28,10 +28,18 @@ function Shop() {
     const [openDialog, setOpenDialog] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false); // New state for delete confirmation dialog
     const [itemToDelete, setItemToDelete] = useState(null); // Store item to delete
+    const navigate = useNavigate(); // Initialize navigation
 
     useEffect(() => {
-        fetchShopItems();
-    }, []);
+        // Check if admin token exists
+        const adminToken = localStorage.getItem('adminToken');
+        if (!adminToken) {
+            // Redirect to admin login if no token is found
+            navigate('/admin/login');
+        } else {
+            fetchShopItems();
+        }
+    }, [navigate]);
 
     const fetchShopItems = async () => {
         try {
@@ -112,7 +120,6 @@ function Shop() {
 
     return (
         <Box display="flex" flexDirection="column" alignItems="center" className="App">
-            <ResponsiveAppBar />
             <AvatarTheme />
             <Box textAlign="center" mt={4} width="100%">
                 <h2>Shop</h2>
@@ -163,7 +170,6 @@ function Shop() {
                     </Box>
                 </div>
             </Box>
-
 
             {/* Dialog for Adding/Editing Items */}
             <Dialog open={openDialog} onClose={handleCloseDialog}>
