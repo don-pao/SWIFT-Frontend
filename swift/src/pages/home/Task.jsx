@@ -73,18 +73,17 @@ function Task() {
   const handleSaveToDo = (savedTask) => {
     setTasks((prevTasks) => {
       const taskExists = prevTasks.some((task) => task.taskId === savedTask.taskId);
-
-      if (taskExists) {
-        // Update the existing task
-        return prevTasks.map((task) =>
-          task.taskId === savedTask.taskId ? savedTask : task
-        );
-      } else {
-        // Add a new task
-        return [...prevTasks, savedTask].sort((a, b) => a.priority - b.priority);
-      }
+  
+      const updatedTasks = taskExists
+        ? prevTasks.map((task) =>
+            task.taskId === savedTask.taskId ? savedTask : task
+          )
+        : [...prevTasks, savedTask];
+  
+      // Sort the tasks by priority before updating the state
+      return updatedTasks.sort((a, b) => a.priority - b.priority);
     });
-
+  
     handleCloseModal();
   };
 
