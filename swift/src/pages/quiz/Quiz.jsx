@@ -6,6 +6,7 @@ import { Modal, Box, Typography, Button } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import './Quiz.css'; // Import the CSS
 import { usePersonalInfo } from '../../context/PersonalInfoContext'; // Import the context hook
+import { useNavigate } from 'react-router-dom';
 
 const QuizForm = () => {
   const { personalInfo } = usePersonalInfo(); // Now inside the component
@@ -22,6 +23,12 @@ const QuizForm = () => {
   const [openEditModal, setOpenEditModal] = React.useState(false);
   const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
   const [selectedQuiz, setSelectedQuiz] = React.useState(null); // Holds the quiz being edited or deleted
+
+  const navigate = useNavigate();
+
+  const navigateToAnswerForm = (quiz) => {
+    navigate(`/answer-form/${quiz.quizId}`, { state: { quiz } });
+  };
 
   
   
@@ -286,24 +293,25 @@ const QuizForm = () => {
 
         <div className="quiz-header" style={{ marginTop: '20px' }}>Quizzes</div>
         <div className="quiz-list">
-        {quizzes.map((quiz) => (
-          <div key={quiz.quizId} className="quiz-item">
-            <div className="title">
-              <strong>Title:</strong> {quiz.title}
-            </div>
-            <div className="flashcard-set">
-              <strong>Flashcard Set:</strong> {quiz.flashcardSetTitle}
-            </div>
-            <div className="total-score">
-              <strong>Total Score:</strong> {quiz.totalScore}
-            </div>
-            <div className="quiz-actions">
-              <button onClick={() => handleOpenEditModal(quiz)}>Edit</button>
-              <button onClick={() => handleOpenDeleteModal(quiz)}>Delete</button>
-            </div>
-          </div>
-        ))}
+  {quizzes.map((quiz) => (
+    <div key={quiz.quizId} className="quiz-item">
+      <div className="title">
+        <strong>Title:</strong> {quiz.title}
       </div>
+      <div className="flashcard-set">
+        <strong>Flashcard Set:</strong> {quiz.flashcardSetTitle}
+      </div>
+      <div className="total-score">
+        <strong>Total Score:</strong> {quiz.totalScore}
+      </div>
+      <div className="quiz-actions">
+        <button onClick={() => handleOpenEditModal(quiz)}>Edit</button>
+        <button onClick={() => handleOpenDeleteModal(quiz)}>Delete</button>
+        <button onClick={() => navigateToAnswerForm(quiz)}>Answer Quiz</button> {/* New Button */}
+      </div>
+    </div>
+  ))}
+</div>
 
         {/* Edit Modal */}
         <Modal
