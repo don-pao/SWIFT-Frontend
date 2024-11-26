@@ -45,7 +45,7 @@ function ResponsiveAppBar() {
 
     const fetchCoinAmount = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/inventory/user/${userID}`);
+        const response = await axios.get(`http://localhost:8080/api/user/${userID}`);
         setCoinAmount(response.data.totalCoins); // Adjust according to your response structure
       } catch (error) {
         console.error('Error fetching coin amount:', error);

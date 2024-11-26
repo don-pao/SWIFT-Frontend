@@ -10,25 +10,41 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { Box } from '@mui/material';
+import { usePersonalInfo } from '../../context/PersonalInfoContext';
 
 function InventoryUI() {
+    const { personalInfo } = usePersonalInfo();
+    const userID = personalInfo?.userId;
+
     const [inventoryItems, setInventoryItems] = useState([]);
     const [currentTheme, setCurrentTheme] = useState('default');
     const [themeUrl, setThemeUrl] = useState(`${process.env.PUBLIC_URL}/images/themes/theme.png`);
 
     useEffect(() => {
+        const savedTheme = localStorage.getItem('currentTheme') || 'default';
+        const savedThemeUrl = localStorage.getItem('themeUrl') || `${process.env.PUBLIC_URL}/images/themes/theme.png`;
+        setCurrentTheme(savedTheme);
+        setThemeUrl(savedThemeUrl);
+
         fetchInventoryItems();
     }, []);
 
     const fetchInventoryItems = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/inventory/getAllInventory');
+            if (!userID) {
+                console.error("User ID is undefined");
+                return;
+            }
+            const response = await axios.get(`http://localhost:8080/api/inventory/getInventoryByUserId/${userID}`);
+            
             if (Array.isArray(response.data)) {
-                const updatedInventory = response.data.map((item, index) => {
+                const updatedInventory = response.data.map((item) => {
+                    const itemData = item.item || {}; // Fallback to an empty object if item.item is undefined
                     return {
                         ...item,
-                        itemUrl: index === 0 && !item.itemUrl ? 'theme.png' : item.itemUrl, // Default 'theme.png' for first card
-                        totalCoins: item.totalCoins || 0, // Default 0 if totalCoins is missing
+                        itemUrl: itemData.itemUrl || 'theme.png', // Default to 'theme.png' if itemUrl is missing
+                        itemCost: itemData.itemCost || 0, // Default to 0 if itemCost is missing
+                        itemName: itemData.itemName || 'Unknown Item', // Default name if itemName is missing
                     };
                 });
                 setInventoryItems(updatedInventory);
@@ -36,7 +52,7 @@ function InventoryUI() {
                 console.error('Expected an array, but got:', response.data);
             }
         } catch (error) {
-            console.error('Error fetching inventory items:', error);
+            console.error('Error fetching inventory items:', error.response?.data || error.message);
         }
     };
 
@@ -51,7 +67,7 @@ function InventoryUI() {
     return (
         <Box display="flex" flexDirection="column" alignItems="center" className="App">
             <ResponsiveAppBar />
-            <AvatarTheme theme={themeUrl} /> {/* Pass themeUrl as a prop */}
+            <AvatarTheme theme={themeUrl} />
             <Box textAlign="center" mt={4} width="100%">
                 <h2>Inventory</h2>
                 <Box sx={{ maxWidth: '100%', mx: 'auto', px: 10 }}>
@@ -61,13 +77,13 @@ function InventoryUI() {
                                 <Card sx={{ maxWidth: 345 }}>
                                     <CardMedia
                                         component="img"
-                                        alt={item.itemList}
+                                        alt={item.itemName}
                                         height="140"
-                                        image={`${process.env.PUBLIC_URL}/images/themes/${item.itemUrl || 'theme.png'}`} // Fallback to theme.png
+                                        image={`${process.env.PUBLIC_URL}/images/themes/${item.itemUrl}`}
                                     />
                                     <CardContent sx={{ textAlign: 'center' }}>
                                         <Typography gutterBottom variant="h5" component="div">
-                                            {item.itemList}
+                                            {item.itemName}
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
                                             Total Coins Spent: {item.totalCoins}
@@ -79,13 +95,13 @@ function InventoryUI() {
                                             color="primary"
                                             onClick={() =>
                                                 handleThemeApply(
-                                                    item.itemList,
-                                                    `${process.env.PUBLIC_URL}/images/themes/${item.itemUrl || 'theme.png'}`
+                                                    item.itemName,
+                                                    `${process.env.PUBLIC_URL}/images/themes/${item.itemUrl}`
                                                 )
                                             }
-                                            disabled={currentTheme === item.itemList}
+                                            disabled={currentTheme === item.itemName}
                                         >
-                                            {currentTheme === item.itemList ? 'Used' : 'Use'}
+                                            {currentTheme === item.itemName ? 'Used' : 'Use'}
                                         </Button>
                                     </CardActions>
                                 </Card>
