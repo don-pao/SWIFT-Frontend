@@ -94,7 +94,7 @@ const UserCreation = () => {
         setUserInfo(newUser.userId, newUser.username, newUser.email); // Store user info in context
   
         // Redirect user to the home route after registration
-        navigate('/home');
+        setIsRegistering(false);
   
       } else {
         // Login the user
@@ -182,13 +182,6 @@ const UserCreation = () => {
     ...buttonStyle,
     backgroundColor: "#edcd3b", // White background for specific buttons
     color: "#63625d", // Text color for specific buttons
-  };
-
-  const linkStyle = {
-    marginTop: "1rem",
-    color: "#007bff",
-    cursor: "pointer",
-    textDecoration: "underline",
   };
 
   return (

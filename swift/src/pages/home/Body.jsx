@@ -67,35 +67,80 @@ function Body() {
               lineHeight: '1.5',
               width: '100%',
               justifyContent: 'flex-start',
+              mb: '20px', // Added margin-bottom for spacing
+              '&:hover': {
+                backgroundColor: '#dcdcdc',
+              },
             }}
           >
             Add a Flashcard
           </Button>
 
-          <Typography variant="h6" sx={{ marginTop: '20px', fontWeight: 'bold', color: '#34313A' }}>
+          <Typography variant="h6" sx={{ marginBottom: '15px', fontWeight: 'bold', color: '#34313A' }}>
             Flashcard Sets
           </Typography>
-          {flashcardSets.length > 0 ? (
-            flashcardSets.map((flashcardSet) => (
-              <Box key={flashcardSet.setId} sx={{ marginTop: '10px', border: '1px solid #ddd', borderRadius: '8px', padding: '10px' }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                  {flashcardSet.title}
-                </Typography>
-                <Typography variant="body2">{flashcardSet.description}</Typography>
-                <Button
-                  variant="outlined"
-                  sx={{ marginTop: '10px', ml: 'auto' }}
-                  onClick={() => navigate(`/flashcard-set-form/`)}
+
+          <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
+            {flashcardSets.length > 0 ? (
+              flashcardSets.map((flashcardSet) => (
+                <Box
+                  key={flashcardSet.setId}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '15px',
+                    marginBottom: '10px',
+                    borderRadius: '8px',
+                    border: '1px solid #ddd',
+                    backgroundColor: '#ffffff',
+                    boxShadow: '0px 1px 5px rgba(0, 0, 0, 0.1)',
+                    transition: 'transform 0.2s',
+                    '&:hover': {
+                      transform: 'scale(1.02)',
+                    },
+                  }}
                 >
-                  Edit Flashcard Set
-                </Button>
-              </Box>
-            ))
-          ) : (
-            <Typography sx={{ marginTop: '20px', color: '#757575' }}>
-              No flashcard sets found. Start by adding one!
-            </Typography>
-          )}
+                  {/* Metadata Section */}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#34313A' }}>
+                      {flashcardSet.title}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#757575', marginTop: '5px' }}>
+                      {flashcardSet.description || 'No description available.'}
+                    </Typography>
+                    <Typography variant="caption" sx={{ marginTop: '5px', color: '#999' }}>
+                    </Typography>
+                  </Box>
+
+                  {/* Edit Button */}
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      padding: '5px 15px',
+                      borderRadius: '8px',
+                      borderColor: '#ccc',
+                      color: '#34313A',
+                      fontWeight: 'bold',
+                      textTransform: 'none',
+                      '&:hover': {
+                        borderColor: '#999',
+                        backgroundColor: '#f9f9f9',
+                      },
+                    }}
+                    onClick={() => navigate(`/flashcard-set-form/`)} // Navigate with setId
+                  >
+                    Edit
+                  </Button>
+                </Box>
+              ))
+            ) : (
+              <Typography sx={{ marginTop: '20px', color: '#757575' }}>
+                No flashcard sets found. Start by adding one!
+              </Typography>
+            )}
+          </Box>
         </Box>
       </Box>
 
