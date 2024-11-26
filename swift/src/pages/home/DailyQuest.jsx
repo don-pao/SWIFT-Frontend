@@ -9,12 +9,12 @@ import {
   Checkbox,
   Button,
 } from '@mui/material';
-import { usePersonalInfo } from '../../context/PersonalInfoContext'; // Import the context hook
+import { usePersonalInfo } from '../../context/PersonalInfoContext';
 
-function DailyQuest({ quests, setQuests, coins, setCoins, tasks = [] }) {
-  // Access the user info from context
+function DailyQuest({ tasks = [] }) {
   const { personalInfo } = usePersonalInfo();
   const userID = personalInfo.userId;
+  const [quests, setQuests] = useState([]);
 
   // Get today's date in a readable format
   const todayDate = new Date().toLocaleDateString('en-US', {
@@ -26,46 +26,37 @@ function DailyQuest({ quests, setQuests, coins, setCoins, tasks = [] }) {
   // Fetch Quests for the logged-in user
   const fetchQuests = useCallback(async () => {
     if (!userID) {
-      return; // Ensure userID is present before fetching quests
+      return;
     }
 
     try {
       const response = await axios.get(`http://localhost:8080/api/dailyquest/getDailyQuestByUserID/${userID}`);
-      setQuests(response.data);
+      
+      // Filtering out any potential duplicates
+      const uniqueQuests = response.data.filter(
+        (quest, index, self) => index === self.findIndex(q => q.title === quest.title)
+      );
+
+      console.log('Fetched Quests:', uniqueQuests); // Debug: Check the quests data being fetched
+
+      setQuests(uniqueQuests);
     } catch (error) {
       console.error('Error fetching quests:', error);
     }
-  }, [setQuests, userID]);
+  }, [userID]);
 
   useEffect(() => {
     fetchQuests();
   }, [fetchQuests]);
 
-  // Automatically update quest completion based on specific requirements
+  // Automatically update quest completion when 5 tasks are completed
   useEffect(() => {
-    if (Array.isArray(tasks) && Array.isArray(quests)) {
-      const completedTasksCount = tasks.filter((task) => task.status === 1).length;
-
-      // Check if a quest like "Complete 5 to do's today" exists and mark it as completed if requirements are met
-      quests.forEach((quest) => {
-        if (quest.title === "Complete 5 to do's today" && completedTasksCount >= 5 && quest.status === 'incomplete') {
-          updateQuestStatus(quest.dailyQuestId, 'completed');
-        }
-      });
+    if (tasks.filter(task => task.status).length >= 5) {
+      axios.put(`http://localhost:8080/api/dailyquest/updateQuestStatus/${userID}`)
+        .then(() => fetchQuests()) // Refresh quests after updating status
+        .catch(err => console.error('Error updating quest status:', err));
     }
-  }, [tasks, quests]);
-
-  // Handle quest status update
-  const updateQuestStatus = async (questId, newStatus) => {
-    try {
-      await axios.put(`http://localhost:8080/api/dailyquest/putDailyQuestDetails?id=${questId}`, {
-        status: newStatus,
-      });
-      fetchQuests(); // Refresh quests after updating status
-    } catch (error) {
-      console.error('Error updating quest status:', error);
-    }
-  };
+  }, [tasks, userID, fetchQuests]);
 
   return (
     <Box sx={{ width: '30%', height: '100%' }}>
@@ -107,7 +98,7 @@ function DailyQuest({ quests, setQuests, coins, setCoins, tasks = [] }) {
           {todayDate}
         </Button>
 
-        <Grid container direction="column" spacing={3}> {/* Adjusted spacing to ensure uniform gap */}
+        <Grid container direction="column" spacing={3}>
           {quests.map((quest) => (
             <Grid item key={quest.dailyQuestId}>
               <Card
@@ -134,8 +125,8 @@ function DailyQuest({ quests, setQuests, coins, setCoins, tasks = [] }) {
                   }}
                 >
                   <Checkbox
-                    checked={quest.status === 'completed'}
-                    disabled // Disable user interaction
+                    checked={quest.status.trim().toLowerCase() === 'complete'} // Ensuring the status is correctly handled
+                    disabled // Disable user interaction with the checkbox
                     sx={{
                       color: '#ffffff',
                       '& .MuiSvgIcon-root': {
