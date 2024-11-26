@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
 function AvatarTheme() {
-    const [themeUrl, setThemeUrl] = useState(`${process.env.PUBLIC_URL}/images/themes/theme.png`);
+    const defaultThemeUrl = `${process.env.PUBLIC_URL}/images/themes/theme.png`;
+    const [themeUrl, setThemeUrl] = useState(defaultThemeUrl);
 
     useEffect(() => {
         // Check localStorage for saved theme
@@ -11,12 +12,21 @@ function AvatarTheme() {
         }
     }, []);
 
+    const handleReset = () => {
+        // Remove the saved theme from localStorage
+        localStorage.removeItem("themeUrl");
+        // Reset the theme to the default
+        setThemeUrl(defaultThemeUrl);
+    };
+
     return (
         <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
             <img
                 src={themeUrl}
                 alt="Current Theme"
-                style={{ width: '100%', maxHeight: '500px', objectFit: 'cover' }}
+                style={{ width: '100%', maxHeight: '500px', objectFit: 'cover', cursor: 'pointer' }}
+                onClick={handleReset} // Reset on click
+                title="Click to reset to the default theme"
             />
         </div>
     );

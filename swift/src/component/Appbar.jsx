@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react'; // Import useEffect and useState
 import AppBar from '@mui/material/AppBar';
+import axios from 'axios';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
@@ -27,9 +28,32 @@ function ResponsiveAppBar() {
   const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const [coinAmount, setCoinAmount] = useState(0);
+  const [userID, setUserID] = useState(null); // State to hold userId
 
-  // Placeholder for coin amount
-  const [coinAmount] = React.useState(100); // Adjust this based on backend data "AKO gi remove ang setCoinAmount  const [coinAmount, setCoinAmount]"
+  useEffect(() => {
+    const currentUser = userService.getCurrentUser(); // Get current user
+    if (currentUser && currentUser.userID) {
+      setUserID(currentUser.userID); // Set userId state
+    } else {
+      console.error('No user found');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!userID) return; // Skip fetching if userId is not available
+
+    const fetchCoinAmount = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/user/${userID}`);
+        setCoinAmount(response.data.totalCoins); // Adjust according to your response structure
+      } catch (error) {
+        console.error('Error fetching coin amount:', error);
+      }
+    };
+
+    fetchCoinAmount();
+  }, [userID]); // Trigger fetch when userId changes
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -45,13 +69,12 @@ function ResponsiveAppBar() {
 
   const handleCloseUserMenu = (setting) => {
     if (setting === 'Profile') {
-      navigate('/user-profile'); // Navigate to the User Profile page
+      navigate('/user-profile');
     } else if (setting === 'Logout') {
-      // Clear any authentication tokens or session data here
       userService.logout();
-      navigate('/login'); // Redirect to Login page
+      navigate('/login');
     }
-    setAnchorElUser(null); // Close the menu
+    setAnchorElUser(null);
   };
 
   return (
@@ -100,8 +123,8 @@ function ResponsiveAppBar() {
           <Typography
             variant="h5"
             noWrap
-            component={Link} // Link for logo navigation
-            to="/" // Navigates to home
+            component={Link}
+            to="/"
             sx={{
               mr: 2,
               display: { xs: 'flex', md: 'none' },
@@ -136,7 +159,7 @@ function ResponsiveAppBar() {
               sx={{ width: 20, height: 20, mr: 0.5 }}
             />
             <Typography variant="body1" sx={{ color: 'white', mr: 2 }}>
-              {coinAmount}
+              {coinAmount} {/* This should now correctly render a number */}
             </Typography>
             {/* Profile Icon */}
             <Tooltip title="Open settings">
@@ -160,11 +183,11 @@ function ResponsiveAppBar() {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-            {settings.map((setting) => (
-              <MenuItem key={setting} onClick={() => handleCloseUserMenu(setting)}>
-                <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
-              </MenuItem>
-            ))}
+              {settings.map((setting) => (
+                <MenuItem key={setting} onClick={() => handleCloseUserMenu(setting)}>
+                  <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+                </MenuItem>
+              ))}
             </Menu>
           </Box>
         </Toolbar>
