@@ -54,46 +54,27 @@ function Shop() {
     };
 
     const handleBuyClick = async (itemId) => {
-        if (!personalInfo.userId) {
+        if (!personalInfo?.userId) {
             alert('You must be logged in to purchase an item.');
             return;
         }
-
+    
         try {
-            // Find the item details
-            const itemToBuy = shopItems.find(item => item.itemId === itemId);
-
-            // Check if the user can afford the item (assuming you have a coins balance)
-            // Assuming user has coins property, adjust if necessary
-            const userCoins = personalInfo.coins; 
-            if (userCoins < itemToBuy.itemCost) {
-                alert('You do not have enough coins to buy this item.');
-                return;
-            }
-
-            // Create inventory record
-            const inventoryRecord = {
-                userId: personalInfo.userId,
-                itemId: itemToBuy.itemId,
-                itemName: itemToBuy.itemName,
-                itemCost: itemToBuy.itemCost,
-                itemUrl: itemToBuy.itemUrl,
-            };
-
-            // Post the inventory record to backend to save the item in user's inventory
-            await axios.post('http://localhost:8080/api/inventory/postInventoryRecord', inventoryRecord);
-
-            // Update the coins balance (if needed)
-            // Assuming there's a setCoins method in context or useState
-            // setCoins(userCoins - itemToBuy.itemCost); 
-
-            alert(`Successfully purchased ${itemToBuy.itemName} and added to your inventory.`);
-            fetchUserInventory(); // Fetch updated inventory
+            await axios.post('http://localhost:8080/api/inventory/purchase', null, {
+                params: {
+                    userId: personalInfo.userId,
+                    itemId: itemId,
+                },
+            });
+    
+            alert('Item successfully purchased!');
+            fetchUserInventory(); // Refresh inventory
         } catch (error) {
             console.error('Error purchasing item:', error);
             alert('Error purchasing item. Please try again.');
         }
     };
+    
 
     return (
         <Box display="flex" flexDirection="column" alignItems="center" className="App">
