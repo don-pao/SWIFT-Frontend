@@ -37,9 +37,14 @@ function DailyQuest({ tasks = [] }) {
         (quest, index, self) => index === self.findIndex(q => q.title === quest.title)
       );
 
-      console.log('Fetched Quests:', uniqueQuests); // Debug: Check the quests data being fetched
+      // Sort quests to ensure "Login" appears before "To Do's"
+      const sortedQuests = uniqueQuests.sort((a, b) => {
+        if (a.title === "Login") return -1;
+        if (b.title === "Login") return 1;
+        return 0;
+      });
 
-      setQuests(uniqueQuests);
+      setQuests(sortedQuests);
     } catch (error) {
       console.error('Error fetching quests:', error);
     }
@@ -91,14 +96,14 @@ function DailyQuest({ tasks = [] }) {
             lineHeight: '1.5',
             width: '100%',
             justifyContent: 'flex-start',
-            marginBottom: '20px',
+            marginBottom: '10px', // Adjusted from '20px' to '10px' to lessen the space
             cursor: 'default', // Changes cursor to indicate that it's not clickable
           }}
         >
           {todayDate}
         </Button>
 
-        <Grid container direction="column" spacing={3}>
+        <Grid container direction="column" spacing={2}> {/* Reduced spacing from 3 to 2 */}
           {quests.map((quest) => (
             <Grid item key={quest.dailyQuestId}>
               <Card
