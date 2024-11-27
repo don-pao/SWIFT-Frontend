@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
-import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { Box } from '@mui/material';
@@ -14,67 +12,70 @@ import { usePersonalInfo } from '../../context/PersonalInfoContext';
 
 function InventoryUI() {
     const { personalInfo } = usePersonalInfo();
-    const userID = personalInfo?.userId;
-
-    const [inventoryItems, setInventoryItems] = useState([]);
-    const [currentTheme, setCurrentTheme] = useState('default');
+    const [purchasedItems, setPurchasedItems] = useState([]);
     const [themeUrl, setThemeUrl] = useState(`${process.env.PUBLIC_URL}/images/themes/theme.png`);
 
     useEffect(() => {
-        const savedTheme = localStorage.getItem('currentTheme') || 'default';
-        const savedThemeUrl = localStorage.getItem('themeUrl') || `${process.env.PUBLIC_URL}/images/themes/theme.png`;
-        setCurrentTheme(savedTheme);
-        setThemeUrl(savedThemeUrl);
+        if (personalInfo?.userId) {
+            fetchPurchasedItems();
+        }
+    }, [personalInfo]);
 
-        fetchInventoryItems();
-    }, []);
+    const fetchPurchasedItems = async () => {
+        if (!personalInfo?.userId) {
+            console.error('User ID is required to fetch purchased items.');
+            return;
+        }
 
-    const fetchInventoryItems = async () => {
         try {
-            if (!userID) {
-                console.error("User ID is undefined");
-                return;
-            }
-            const response = await axios.get(`http://localhost:8080/api/inventory/getInventoryByUserId/${userID}`);
-            
+            const response = await axios.get(`http://localhost:8080/api/inventory/purchased/${personalInfo.userId}`);
             if (Array.isArray(response.data)) {
-                const updatedInventory = response.data.map((item) => {
-                    const itemData = item.item || {}; // Fallback to an empty object if item.item is undefined
-                    return {
-                        ...item,
-                        itemUrl: itemData.itemUrl || 'theme.png', // Default to 'theme.png' if itemUrl is missing
-                        itemCost: itemData.itemCost || 0, // Default to 0 if itemCost is missing
-                        itemName: itemData.itemName || 'Unknown Item', // Default name if itemName is missing
-                    };
-                });
-                setInventoryItems(updatedInventory);
+                setPurchasedItems(response.data.map(item => ({
+                    itemId: item.itemId,
+                    itemName: item.itemName,
+                    itemUrl: item.itemUrl,
+                })));
             } else {
                 console.error('Expected an array, but got:', response.data);
             }
         } catch (error) {
-            console.error('Error fetching inventory items:', error.response?.data || error.message);
+            console.error('Error fetching purchased items:', error);
         }
     };
 
-    const handleThemeApply = (themeName, themeImageUrl) => {
-        setCurrentTheme(themeName);
-        setThemeUrl(themeImageUrl);
-        localStorage.setItem('currentTheme', themeName);
-        localStorage.setItem('themeUrl', themeImageUrl);
-        console.log(`Applied theme: ${themeName}`);
+    const handleCardClick = (itemUrl) => {
+        const fullUrl = `${process.env.PUBLIC_URL}/images/themes/${itemUrl}`;
+        setThemeUrl(fullUrl);
+        localStorage.setItem('themeUrl', fullUrl);
+    };
+
+    const handleReset = () => {
+        setThemeUrl(`${process.env.PUBLIC_URL}/images/themes/theme.png`);
+        localStorage.removeItem('themeUrl');
     };
 
     return (
         <Box display="flex" flexDirection="column" alignItems="center" className="App">
             <ResponsiveAppBar />
-            <AvatarTheme theme={themeUrl} />
+            <AvatarTheme themeUrl={themeUrl} handleReset={handleReset} />
             <Box textAlign="center" mt={4} width="100%">
-                <h2>Inventory</h2>
+                <h2>My Inventory</h2>
                 <Box sx={{ maxWidth: '100%', mx: 'auto', px: 10 }}>
                     <Grid container spacing={2} justifyContent="center">
-                        {inventoryItems.map((item) => (
-                            <Grid item xs={12} sm={6} md={4} key={item.inventoryId}>
-                                <Card sx={{ maxWidth: 345 }}>
+                        {purchasedItems.map(item => (
+                            <Grid item xs={12} sm={6} md={4} key={item.itemId}>
+                                <Card
+                                    sx={{
+                                        maxWidth: 345,
+                                        cursor: 'pointer',
+                                        transition: 'transform 0.2s, box-shadow 0.2s',
+                                        '&:hover': {
+                                            transform: 'scale(1.05)',
+                                            boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.3)',
+                                        },
+                                    }}
+                                    onClick={() => handleCardClick(item.itemUrl)}
+                                >
                                     <CardMedia
                                         component="img"
                                         alt={item.itemName}
@@ -85,25 +86,7 @@ function InventoryUI() {
                                         <Typography gutterBottom variant="h5" component="div">
                                             {item.itemName}
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Total Coins Spent: {item.totalCoins}
-                                        </Typography>
                                     </CardContent>
-                                    <CardActions>
-                                        <Button
-                                            size="small"
-                                            color="primary"
-                                            onClick={() =>
-                                                handleThemeApply(
-                                                    item.itemName,
-                                                    `${process.env.PUBLIC_URL}/images/themes/${item.itemUrl}`
-                                                )
-                                            }
-                                            disabled={currentTheme === item.itemName}
-                                        >
-                                            {currentTheme === item.itemName ? 'Used' : 'Use'}
-                                        </Button>
-                                    </CardActions>
                                 </Card>
                             </Grid>
                         ))}
