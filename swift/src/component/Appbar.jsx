@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; // Import useEffect and useState
+import React, { useEffect, useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import axios from 'axios';
 import Box from '@mui/material/Box';
@@ -13,14 +13,14 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import { userService } from '../pages/login/userService';
 import { Link, useNavigate } from 'react-router-dom';
+import { usePersonalInfo } from '../context/PersonalInfoContext';
 
 const pages = [
   { label: 'Home', path: '/home' },
   { label: 'Inventory', path: '/inventory' },
   { label: 'Shop', path: '/shop' },
-  { label: 'Flashcard', path: '/flashcard-set-form' }
+  { label: 'Flashcard', path: '/flashcard-set-form' },
 ];
 const settings = ['Profile', 'Logout'];
 
@@ -28,32 +28,29 @@ function ResponsiveAppBar() {
   const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const [coinAmount, setCoinAmount] = useState(0);
-  const [userID, setUserID] = useState(null); // State to hold userId
+  const [coinBalance, setCoinBalance] = useState(0);
+  const { personalInfo } = usePersonalInfo();
+   // Access userID from the context
 
-  useEffect(() => {
-    const currentUser = userService.getCurrentUser(); // Get current user
-    if (currentUser && currentUser.userID) {
-      setUserID(currentUser.userID); // Set userId state
-    } else {
-      console.error('No user found');
-    }
-  }, []);
+   useEffect(() => {
+        if (personalInfo?.userId) {
+            fetchCoinBalance();
+        }
+    }, [personalInfo]);
 
-  useEffect(() => {
-    if (!userID) return; // Skip fetching if userId is not available
+    const fetchCoinBalance = async () => {
+        if (!personalInfo?.userId) {
+            console.error('User ID is required to fetch coin balance.');
+            return;
+        }
 
-    const fetchCoinAmount = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8080/api/user/${userID}`);
-        setCoinAmount(response.data.totalCoins); // Adjust according to your response structure
-      } catch (error) {
-        console.error('Error fetching coin amount:', error);
-      }
+        try {
+            const response = await axios.get(`http://localhost:8080/api/user/${personalInfo.userId}/coin-balance`);
+            setCoinBalance(response.data); // Assuming API returns the balance directly
+        } catch (error) {
+            console.error('Error fetching coin balance:', error);
+        }
     };
-
-    fetchCoinAmount();
-  }, [userID]); // Trigger fetch when userId changes
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -71,12 +68,12 @@ function ResponsiveAppBar() {
     if (setting === 'Profile') {
       navigate('/user-profile');
     } else if (setting === 'Logout') {
-      userService.logout();
+      // Assume there's a logout function in context or service
       navigate('/login');
     }
     setAnchorElUser(null);
   };
-
+  
   return (
     <AppBar position="static" sx={{ backgroundColor: '#432874' }}>
       <Container maxWidth="xl">
@@ -113,7 +110,11 @@ function ResponsiveAppBar() {
             >
               {pages.map((page) => (
                 <MenuItem key={page.label} onClick={handleCloseNavMenu}>
-                  <Typography component={Link} to={page.path} sx={{ textAlign: 'center', color: 'inherit', textDecoration: 'none' }}>
+                  <Typography
+                    component={Link}
+                    to={page.path}
+                    sx={{ textAlign: 'center', color: 'inherit', textDecoration: 'none' }}
+                  >
                     {page.label}
                   </Typography>
                 </MenuItem>
@@ -159,7 +160,7 @@ function ResponsiveAppBar() {
               sx={{ width: 20, height: 20, mr: 0.5 }}
             />
             <Typography variant="body1" sx={{ color: 'white', mr: 2 }}>
-              {coinAmount} {/* This should now correctly render a number */}
+              {coinBalance} {/* Display coin amount */}
             </Typography>
             {/* Profile Icon */}
             <Tooltip title="Open settings">

@@ -3,23 +3,21 @@ import axios from 'axios';
 import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { Box } from '@mui/material';
-import { usePersonalInfo } from '../../context/PersonalInfoContext';  // Ensure this is imported
+import { usePersonalInfo } from '../../context/PersonalInfoContext';
 
 function InventoryUI() {
-    const { personalInfo } = usePersonalInfo();  // Get user info from context
+    const { personalInfo } = usePersonalInfo();
     const [purchasedItems, setPurchasedItems] = useState([]);
+    const [themeUrl, setThemeUrl] = useState(`${process.env.PUBLIC_URL}/images/themes/theme.png`);
 
     useEffect(() => {
         if (personalInfo?.userId) {
             fetchPurchasedItems();
-        } else {
-            console.log('Waiting for personalInfo to populate...');
         }
     }, [personalInfo]);
 
@@ -35,7 +33,7 @@ function InventoryUI() {
                 setPurchasedItems(response.data.map(item => ({
                     itemId: item.itemId,
                     itemName: item.itemName,
-                    itemUrl: item.itemUrl
+                    itemUrl: item.itemUrl,
                 })));
             } else {
                 console.error('Expected an array, but got:', response.data);
@@ -45,17 +43,39 @@ function InventoryUI() {
         }
     };
 
+    const handleCardClick = (itemUrl) => {
+        const fullUrl = `${process.env.PUBLIC_URL}/images/themes/${itemUrl}`;
+        setThemeUrl(fullUrl);
+        localStorage.setItem('themeUrl', fullUrl);
+    };
+
+    const handleReset = () => {
+        setThemeUrl(`${process.env.PUBLIC_URL}/images/themes/theme.png`);
+        localStorage.removeItem('themeUrl');
+    };
+
     return (
         <Box display="flex" flexDirection="column" alignItems="center" className="App">
             <ResponsiveAppBar />
-            <AvatarTheme />
+            <AvatarTheme themeUrl={themeUrl} handleReset={handleReset} />
             <Box textAlign="center" mt={4} width="100%">
                 <h2>My Inventory</h2>
                 <Box sx={{ maxWidth: '100%', mx: 'auto', px: 10 }}>
                     <Grid container spacing={2} justifyContent="center">
                         {purchasedItems.map(item => (
                             <Grid item xs={12} sm={6} md={4} key={item.itemId}>
-                                <Card sx={{ maxWidth: 345 }}>
+                                <Card
+                                    sx={{
+                                        maxWidth: 345,
+                                        cursor: 'pointer',
+                                        transition: 'transform 0.2s, box-shadow 0.2s',
+                                        '&:hover': {
+                                            transform: 'scale(1.05)',
+                                            boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.3)',
+                                        },
+                                    }}
+                                    onClick={() => handleCardClick(item.itemUrl)}
+                                >
                                     <CardMedia
                                         component="img"
                                         alt={item.itemName}
