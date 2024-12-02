@@ -1,25 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { usePersonalInfo } from '../context/PersonalInfoContext';
+import { useTheme } from '../context/ThemeContext';
 
 function AvatarTheme({ handleReset }) {
     const { personalInfo } = usePersonalInfo();
+    const { theme } = useTheme();
     const defaultThemeUrl = `${process.env.PUBLIC_URL}/images/themes/theme.png`;
     const [themeUrl, setThemeUrl] = useState(defaultThemeUrl);
 
-    // Load the theme from localStorage on mount, user-specific
     useEffect(() => {
         if (personalInfo?.userId) {
             const userSpecificThemeKey = `themeUrl_${personalInfo.userId}`;
             const savedThemeUrl = localStorage.getItem(userSpecificThemeKey) || defaultThemeUrl;
             setThemeUrl(savedThemeUrl);
+            // Save the theme URL and colors in local storage
+            localStorage.setItem(userSpecificThemeKey, savedThemeUrl);
+            localStorage.setItem(`appBarBgColor_${personalInfo.userId}`, theme.appBarBackground);
+            localStorage.setItem(`pageBgColor_${personalInfo.userId}`, theme.pageBackground);
         }
-    }, [personalInfo]);
+
+        // Apply the theme colors on mount
+        const appBarElement = document.getElementById('app-bar');
+        if (appBarElement) {
+            appBarElement.style.backgroundColor = theme.appBarBackground;
+        }
+        document.body.style.backgroundColor = theme.pageBackground;
+    }, [personalInfo, theme]);
 
     const resetTheme = () => {
         if (personalInfo?.userId) {
             const userSpecificThemeKey = `themeUrl_${personalInfo.userId}`;
             setThemeUrl(defaultThemeUrl);
-            localStorage.removeItem(userSpecificThemeKey);
+            localStorage.removeItem(userSpecificThemeKey); // Remove the theme URL on reset
+            localStorage.removeItem(`appBarBgColor_${personalInfo.userId}`); // Remove app bar color
+            localStorage.removeItem(`pageBgColor_${personalInfo.userId}`); // Remove page background color
+            document.body.style.backgroundColor = '#ffffff'; // Reset to default white
+            const appBarElement = document.getElementById('app-bar');
+            if (appBarElement) {
+                appBarElement.style.backgroundColor = '#3f51b5'; // Reset to Material-UI default
+            }
             if (handleReset) handleReset();
         }
     };

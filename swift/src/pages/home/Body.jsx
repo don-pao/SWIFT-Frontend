@@ -5,6 +5,7 @@ import axios from 'axios';
 import Task from './Task';
 import DailyQuest from './DailyQuest';
 import { usePersonalInfo } from '../../context/PersonalInfoContext';
+import { useTheme } from '../../context/ThemeContext';
 
 function Body() {
   const [quests, setQuests] = useState([]);
@@ -12,7 +13,7 @@ function Body() {
   const [flashcardSets, setFlashcardSets] = useState([]);
   const navigate = useNavigate();
   const { personalInfo } = usePersonalInfo();
-
+  const { theme } = useTheme();
   const handleAddFlashcard = () => {
     navigate('/flashcard-set-form');
   };
@@ -33,7 +34,8 @@ function Body() {
   }, [personalInfo?.userId]);
 
   return (
-    <Box display="flex" justifyContent="space-between" sx={{ padding: '20px', height: '100%', backgroundColor: '#f5f5f5' }}>
+    <Box display="flex" justifyContent="space-between" sx={{ padding: '20px', height: '100%', backgroundColor: theme.pageBackground, // Dynamic background
+      transition: 'background-color 0.3s ease' }}>
       <DailyQuest quests={quests} setQuests={setQuests} coins={coins} setCoins={setCoins} />
 
       <Box sx={{ width: '42%', height: '100%' }}>

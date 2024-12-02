@@ -1,3 +1,4 @@
+// InventoryUI.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ResponsiveAppBar from '../../component/Appbar';
@@ -9,16 +10,24 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { Box } from '@mui/material';
 import { usePersonalInfo } from '../../context/PersonalInfoContext';
+import { useTheme } from '../../context/ThemeContext';
 
 function InventoryUI() {
     const { personalInfo } = usePersonalInfo();
     const [purchasedItems, setPurchasedItems] = useState([]);
+    const { theme, updateTheme } = useTheme();
 
     useEffect(() => {
         if (personalInfo?.userId) {
             fetchPurchasedItems();
+            // Set the background colors based on the theme
+            document.body.style.backgroundColor = theme.pageBackground;
+            const appBarElement = document.getElementById('app-bar');
+            if (appBarElement) {
+                appBarElement.style.backgroundColor = theme.appBarBackground;
+            }
         }
-    }, [personalInfo]);
+    }, [personalInfo, theme]);
 
     const fetchPurchasedItems = async () => {
         if (!personalInfo?.userId) {
@@ -48,21 +57,17 @@ function InventoryUI() {
 
     const handleCardClick = (itemUrl) => {
         if (personalInfo?.userId) {
-            const userSpecificThemeKey = `themeUrl_${personalInfo.userId}`;
-            const fullUrl = `${process.env.PUBLIC_URL}/images/themes/${itemUrl}?t=${new Date().getTime()}`;
-            localStorage.setItem(userSpecificThemeKey, fullUrl);
-            window.location.reload();
+            const themeName = itemUrl.split('/').pop(); // Get the image filename
+            updateTheme(themeName); // Update theme context
+            const fullUrl = `${process.env.PUBLIC_URL}/images/themes/${itemUrl}`;
+            localStorage.setItem(`themeUrl_${personalInfo.userId}`, fullUrl); // Update local storage
         }
-    };
-
-    const handleReset = () => {
-        // This method is now handled in the AvatarTheme component
     };
 
     return (
         <Box display="flex" flexDirection="column" alignItems="center" className="App">
             <ResponsiveAppBar />
-            <AvatarTheme handleReset={handleReset} />
+            <AvatarTheme />
             <Box textAlign="center" mt={4} width="100%">
                 <h2>My Inventory</h2>
                 <Box sx={{ maxWidth: '100%', mx: 'auto', px: 10 }}>

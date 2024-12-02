@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { PersonalInfoProvider } from './context/PersonalInfoContext'; 
- // Import the context provider
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import Home from './pages/home/Home';
 import Login from './pages/login/UserCreation';
 import UserProfile from './pages/userProfile/UserProfile';
@@ -11,23 +11,28 @@ import FlashcardSetForm from './pages/flashcardset/FlashcardSet';
 import ShopUI from './pages/shop/ShopAdmin';
 import Shop from './pages/shop/Shop';
 import InventoryUI from './pages/shop/Inventory';
-import AdminLoginAndRegister from './pages/admin/AdminLoginAndRegister'; // Import Admin Login/Registration component
-import AdminDashboard from './pages/admin/AdminDashboard'; // Import Admin Dashboard component
+import AdminLoginAndRegister from './pages/admin/AdminLoginAndRegister';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import AnswerForm from './pages/quiz/Answer';
 import FlashcardReview from './pages/flashcardset/FlashcardReview'; 
 
-function App() {
-
+function AppContent() {
+  const { theme } = useTheme();
   const isAdminAuthenticated = () => !!localStorage.getItem('adminToken');
 
   return (
-    <PersonalInfoProvider>  {/* Wrap the app with the context provider */}
+    <div 
+      style={{ 
+        backgroundColor: theme.pageBackground, 
+        minHeight: '100vh',
+        transition: 'background-color 0.3s ease'
+      }}
+    >
       <Router>
         <Routes>
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/home" element={<Home />} />
-          <Route path="/login" element={<Login />} />
           <Route path="/user-profile" element={<UserProfile />} />
           <Route path="/flashcard-set-form" element={<FlashcardSetForm />} />
           <Route path="/flashcard-form/:setId" element={<FlashcardForm />} />
@@ -52,6 +57,16 @@ function App() {
           />
         </Routes>
       </Router>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <PersonalInfoProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </PersonalInfoProvider>
   );
 }

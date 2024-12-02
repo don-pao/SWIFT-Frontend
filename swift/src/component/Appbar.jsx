@@ -15,6 +15,7 @@ import AdbIcon from '@mui/icons-material/Adb';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePersonalInfo } from '../context/PersonalInfoContext';
+import { useTheme } from '../context/ThemeContext';
 
 const pages = [
   { label: 'Home', path: '/home' },
@@ -30,6 +31,7 @@ function ResponsiveAppBar() {
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [coinBalance, setCoinBalance] = useState(0);
   const { personalInfo } = usePersonalInfo();
+  const { theme } = useTheme();
    // Access userID from the context
 
    useEffect(() => {
@@ -75,7 +77,8 @@ function ResponsiveAppBar() {
   };
   
   return (
-    <AppBar position="static" sx={{ backgroundColor: '#432874' }}>
+    <AppBar position="static" sx={{ backgroundColor: theme.appBarBackground, // Dynamic AppBar background
+      transition: 'background-color 0.3s ease' }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
         <IconButton component={Link} to="/home" sx={{ color: 'inherit' }}>
