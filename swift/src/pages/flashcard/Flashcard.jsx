@@ -2,31 +2,30 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
-import './Flashcard.css'; // Import the CSS
+import './Flashcard.css'; 
 import { useParams } from 'react-router-dom';
-import { Modal, Button, Typography, Box } from '@mui/material'; // MUI Modal components
+import { Modal, Button, Typography, Box } from '@mui/material'; 
 
 const FlashcardForm = () => {
-  const { setId } = useParams(); // Extract set_id from URL
+  const { setId } = useParams(); 
   const [term, setTerm] = useState('');
   const [definition, setDefinition] = useState('');
   const [flashcards, setFlashcards] = useState([]);
   const [currentFlashcardId, setCurrentFlashcardId] = useState(null);
-  const [flashcardSetId, setFlashcardSetId] = useState(setId); // To store selected FlashcardSet ID
+  const [flashcardSetId, setFlashcardSetId] = useState(setId); 
 
-  const [openEditModal, setOpenEditModal] = useState(false); // Control the Edit modal visibility
-  const [selectedFlashcard, setSelectedFlashcard] = useState(null); // Store the selected flashcard to edit
+  const [openEditModal, setOpenEditModal] = useState(false); 
+  const [selectedFlashcard, setSelectedFlashcard] = useState(null); 
 
-  const [openDeleteModal, setOpenDeleteModal] = useState(false); // Control the Delete modal visibility
-  const [selectedFlashcardToDelete, setSelectedFlashcardToDelete] = useState(null); // Store flashcard selected for deletion
+  const [openDeleteModal, setOpenDeleteModal] = useState(false); 
+  const [selectedFlashcardToDelete, setSelectedFlashcardToDelete] = useState(null); 
 
   useEffect(() => {
     if (setId) {
-      setFlashcardSetId(setId); // Ensure the setId is set when it changes
+      setFlashcardSetId(setId);
     }
   }, [setId]);
 
-  // Fetch flashcards for the current setId
   const fetchFlashcards = async () => {
     try {
       const response = await axios.get(`http://localhost:8080/api/flashcard/getFlashcardsBySetId/${setId}`);
@@ -38,11 +37,10 @@ const FlashcardForm = () => {
 
   useEffect(() => {
     if (setId) {
-      fetchFlashcards(); // Fetch flashcards for the current setId
+      fetchFlashcards(); 
     }
-  }, [setId]); // Re-fetch flashcards whenever setId changes
+  }, [setId]); 
 
-  // Handle form submission (create or update flashcard)
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newFlashcard = { term, definition, flashcardSet: { setId } };
@@ -58,14 +56,13 @@ const FlashcardForm = () => {
       } else {
         await axios.post('http://localhost:8080/api/flashcard/postflashcardrecord', newFlashcard);
       }
-      fetchFlashcards(); // Re-fetch flashcards after adding or updating
-      resetForm(); // Reset the form after submission
+      fetchFlashcards(); 
+      resetForm(); 
     } catch (error) {
       console.error('Error submitting flashcard:', error);
     }
   };
 
-  // Reset form
   const resetForm = () => {
     setTerm('');
     setDefinition('');
@@ -73,36 +70,32 @@ const FlashcardForm = () => {
     setCurrentFlashcardId(null);
   };
 
-  // Handle editing flashcard
   const handleEditFlashcard = (flashcard) => {
     setSelectedFlashcard(flashcard);
-    setOpenEditModal(true); // Open the edit modal
+    setOpenEditModal(true); 
   };
 
-  // Handle confirming the edit action
   const handleConfirmEdit = () => {
     setTerm(selectedFlashcard.term);
     setDefinition(selectedFlashcard.definition);
     setFlashcardSetId(selectedFlashcard.flashcardSetId);
     setCurrentFlashcardId(selectedFlashcard.flashcardId || selectedFlashcard.id);
-    setOpenEditModal(false); // Close the modal after confirming
+    setOpenEditModal(false); 
   };
 
-  // Handle deleting flashcard
   const handleDeleteFlashcard = async () => {
     try {
       await axios.delete(`http://localhost:8080/api/flashcard/deleteFlashcardDetails/${selectedFlashcardToDelete.flashcardId || selectedFlashcardToDelete.id}`);
-      fetchFlashcards(); // Re-fetch flashcards after deletion
-      setOpenDeleteModal(false); // Close delete modal
+      fetchFlashcards(); 
+      setOpenDeleteModal(false); 
     } catch (error) {
       console.error('Error deleting flashcard:', error);
     }
   };
 
-  // Open the delete modal
   const handleOpenDeleteModal = (flashcard) => {
     setSelectedFlashcardToDelete(flashcard);
-    setOpenDeleteModal(true); // Open delete modal
+    setOpenDeleteModal(true); 
   };
 
   return (

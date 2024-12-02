@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
 import { Modal, Box, Typography, Button, Menu, MenuItem } from '@mui/material';
-import './FlashcardSetForm.css'; // Import the CSS
-import { usePersonalInfo } from '../../context/PersonalInfoContext'; // Import the context hook
+import './FlashcardSetForm.css'; 
+import { usePersonalInfo } from '../../context/PersonalInfoContext';
 
 const FlashcardSetForm = () => {
   const [title, setTitle] = useState('');
@@ -15,7 +15,7 @@ const FlashcardSetForm = () => {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedSet, setSelectedSet] = useState(null);
-  const [anchorEl, setAnchorEl] = useState(null); // Kebab menu anchor
+  const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
 
   // Access the user info from context
@@ -43,7 +43,7 @@ const FlashcardSetForm = () => {
     const newFlashcardSet = {
       title,
       description,
-      user: { userID }, // Use the userID from context
+      user: { userID }, 
     };
 
     console.log('Title:', title);
@@ -179,7 +179,6 @@ const FlashcardSetForm = () => {
 
         <div className="flashcard-header" style={{ marginTop: '20px' }}>Flashcard Sets</div>
 
-        {/* Display a notice if there are no flashcard sets */}
         <div className="flashcard-list">
           {flashcardSets.length === 0 ? (
             <div className="no-flashcards-message">
@@ -261,7 +260,6 @@ const FlashcardSetForm = () => {
   );
 };
 
-// Add styles for the Review button
 const styles = {
   container: {
     width: '80%',
