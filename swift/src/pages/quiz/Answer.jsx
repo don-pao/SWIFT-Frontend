@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Answer.css';
 import { Button } from '@mui/material';
 
 const AnswerForm = () => {
   const location = useLocation();
-  const quiz = location.state?.quiz;
+  const navigate = useNavigate();
+  const { quiz, flashcardSetId } = location.state; 
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [totalScore, setTotalScore] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  
+  console.log('Received Quiz:', quiz);
+  console.log('Received Flashcard Set ID:', flashcardSetId);
 
   useEffect(() => {
     if (quiz) {
@@ -46,6 +51,16 @@ const AnswerForm = () => {
       <ResponsiveAppBar />
       <AvatarTheme />
       <div className="answer-form-container">
+        {/* Back to Quizzes Button */}
+        <Button
+          className="back-button"
+          onClick={() => navigate(`/quiz-form/${flashcardSetId}`)} // Change '/quizzes' to your quizzes list route
+          variant="contained"
+          color="secondary"
+        >
+          Back to Quizzes
+        </Button>
+
         <div className="quiz-header">Answer Quiz: {quiz.title}</div>
         <div className="quiz-questions">
           {quiz.questions.map((question, questionIndex) => (
