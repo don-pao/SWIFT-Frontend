@@ -116,7 +116,6 @@ const AdminLoginAndRegister = () => {
         );
 
         if (response.status === 200) {
-          alert("Admin logged in successfully!");
           localStorage.setItem("adminToken", "dummy-token");
           window.location.href = "/admin/dashboard";
         } else {
