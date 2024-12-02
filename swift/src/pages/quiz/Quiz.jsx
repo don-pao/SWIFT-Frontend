@@ -27,7 +27,9 @@ const QuizForm = () => {
   const navigate = useNavigate();
 
   const navigateToAnswerForm = (quiz) => {
-    navigate(`/answer-form/${quiz.quizId}`, { state: { quiz } });
+    navigate(`/answer-form/${quiz.quizId}`, {
+      state: { quiz, flashcardSetId }  // Pass flashcardSetId here
+    });
   };
 
   
@@ -226,9 +228,9 @@ const QuizForm = () => {
             />
           </div>
           <div className="quiz-input-container">
-            <label>Questions:</label>
             {questions.map((question, index) => (
               <div key={index} className="quiz-input-container">
+                <h3>Question {index + 1}</h3>
                 <input
                   type="text"
                   value={question.text}

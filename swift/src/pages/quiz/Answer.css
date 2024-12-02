@@ -64,9 +64,12 @@
   }
   
   .submit-button2:hover {
-    background-color: #45a049;
+    background-color: #432874;
   }
   
+  .submit-button2{
+    background-color: #432874; 
+  }
   .result-message {
     font-size: 1.2rem;
     font-weight: bold;
@@ -87,4 +90,10 @@
   .option-label input {
     margin-right: 10px;
   }
-    
+
+  .back-button {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #432874;
+  }
+  
