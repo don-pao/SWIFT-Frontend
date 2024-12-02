@@ -63,6 +63,16 @@ function DailyQuest({ tasks = [] }) {
     }
   }, [tasks, userID, fetchQuests]);
 
+  // Automatically update "Quiz" quest completion when the quiz is taken (add quiz completion check)
+  useEffect(() => {
+    const quizQuest = quests.find((quest) => quest.title === "Quiz");
+    if (quizQuest && quizQuest.status.trim().toLowerCase() === 'incomplete') {
+      axios.put(`http://localhost:8080/api/dailyquest/updateQuizQuestStatus/${userID}`)
+        .then(() => fetchQuests()) // Refresh quests after updating status
+        .catch(err => console.error('Error updating quiz quest status:', err));
+    }
+  }, [quests, userID, fetchQuests]);
+
   return (
     <Box sx={{ width: '30%', height: '100%' }}>
       <Typography variant="h5" sx={{ marginBottom: '10px', fontWeight: 'bold', color: '#34313A', textAlign: 'left' }}>
