@@ -14,6 +14,7 @@ import InventoryUI from './pages/shop/Inventory';
 import AdminLoginAndRegister from './pages/admin/AdminLoginAndRegister'; // Import Admin Login/Registration component
 import AdminDashboard from './pages/admin/AdminDashboard'; // Import Admin Dashboard component
 import AnswerForm from './pages/quiz/Answer';
+import FlashcardReview from './pages/flashcardset/FlashcardReview'; 
 
 function App() {
 
@@ -35,6 +36,7 @@ function App() {
           <Route path="/shopadmin" element={<ShopUI />} />
           <Route path='/inventory' element={<InventoryUI />} />
           <Route path="/answer-form/:quizId" element={<AnswerForm />} />
+          <Route path="/review/:setId" element={<FlashcardReview />} />
           {/* Admin Routes */}
           <Route
             path="/admin/login"
