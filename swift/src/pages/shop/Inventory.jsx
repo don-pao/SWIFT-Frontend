@@ -13,7 +13,16 @@ import { usePersonalInfo } from '../../context/PersonalInfoContext';
 function InventoryUI() {
     const { personalInfo } = usePersonalInfo();
     const [purchasedItems, setPurchasedItems] = useState([]);
-    const [themeUrl, setThemeUrl] = useState(`${process.env.PUBLIC_URL}/images/themes/theme.png`);
+    const [themeUrl, setThemeUrl] = useState(
+        `${process.env.PUBLIC_URL}/images/themes/theme.png`
+    );
+
+    useEffect(() => {
+        const savedThemeUrl = localStorage.getItem('themeUrl');
+        if (savedThemeUrl) {
+            setThemeUrl(savedThemeUrl);
+        }
+    }, []);
 
     useEffect(() => {
         if (personalInfo?.userId) {
@@ -28,13 +37,17 @@ function InventoryUI() {
         }
 
         try {
-            const response = await axios.get(`http://localhost:8080/api/inventory/purchased/${personalInfo.userId}`);
+            const response = await axios.get(
+                `http://localhost:8080/api/inventory/purchased/${personalInfo.userId}`
+            );
             if (Array.isArray(response.data)) {
-                setPurchasedItems(response.data.map(item => ({
-                    itemId: item.itemId,
-                    itemName: item.itemName,
-                    itemUrl: item.itemUrl,
-                })));
+                setPurchasedItems(
+                    response.data.map(item => ({
+                        itemId: item.itemId,
+                        itemName: item.itemName,
+                        itemUrl: item.itemUrl,
+                    }))
+                );
             } else {
                 console.error('Expected an array, but got:', response.data);
             }
@@ -44,10 +57,11 @@ function InventoryUI() {
     };
 
     const handleCardClick = (itemUrl) => {
-        const fullUrl = `${process.env.PUBLIC_URL}/images/themes/${itemUrl}`;
-        setThemeUrl(fullUrl);
-        localStorage.setItem('themeUrl', fullUrl);
+        const fullUrl = `${process.env.PUBLIC_URL}/images/themes/${itemUrl}?t=${new Date().getTime()}`;
+        localStorage.setItem('themeUrl', fullUrl); // Save the theme globally
+        window.location.reload(); // Ensure all pages update
     };
+    
 
     const handleReset = () => {
         setThemeUrl(`${process.env.PUBLIC_URL}/images/themes/theme.png`);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { PersonalInfoProvider } from './context/PersonalInfoContext';  // Import the context provider
+import { PersonalInfoProvider } from './context/PersonalInfoContext'; 
+ // Import the context provider
 import Home from './pages/home/Home';
 import Login from './pages/login/UserCreation';
 import UserProfile from './pages/userProfile/UserProfile';
