@@ -62,8 +62,8 @@ const AnswerForm = () => {
         onClick={() => navigate(`/quiz-form/${flashcardSetId}`)}
         variant="outlined"
         style={{
-          color: '#73489c', // Text color
-          borderColor: '#73489c', // Outline color
+          color: '#73489c', 
+          borderColor: '#73489c', 
         }}
       >
         Back to Quizzes
@@ -122,7 +122,7 @@ const AnswerForm = () => {
               backgroundColor: '#73489c',
               color: '#ffffff',
               '&:hover': {
-                backgroundColor: '#5d387a', // Slightly darker shade for hover effect
+                backgroundColor: '#5d387a', 
               },
             }}
           >

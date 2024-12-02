@@ -4,31 +4,31 @@ import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
 import { Modal, Box, Typography, Button } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import './Quiz.css'; // Import the CSS
-import { usePersonalInfo } from '../../context/PersonalInfoContext'; // Import the context hook
+import './Quiz.css'; 
+import { usePersonalInfo } from '../../context/PersonalInfoContext'; 
 import { useNavigate } from 'react-router-dom';
 
 const QuizForm = () => {
-  const { personalInfo } = usePersonalInfo(); // Now inside the component
-  const userID = personalInfo.userId; // Get the userID directly here
-  const { setId } = useParams(); // Extract set_id
+  const { personalInfo } = usePersonalInfo(); 
+  const userID = personalInfo.userId; 
+  const { setId } = useParams(); 
   const [title, setTitle] = useState('');
   const [questions, setQuestions] = useState([
-    { text: '', options: ['', '', '', ''], correctAnswerIndex: 0, score: 0 } // Use 'score' instead of 'questionScore'
+    { text: '', options: ['', '', '', ''], correctAnswerIndex: 0, score: 0 } 
   ]);
-  const [flashcardSetId, setFlashcardSetId] = useState(setId);  // For storing the selected flashcard set ID
-  const [flashcardSets, setFlashcardSets] = useState([]);  // For storing the list of available flashcard sets
+  const [flashcardSetId, setFlashcardSetId] = useState(setId);  
+  const [flashcardSets, setFlashcardSets] = useState([]); 
   const [quizzes, setQuizzes] = useState([]);
   const [currentQuizId, setCurrentQuizId] = useState(null);
   const [openEditModal, setOpenEditModal] = React.useState(false);
   const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
-  const [selectedQuiz, setSelectedQuiz] = React.useState(null); // Holds the quiz being edited or deleted
+  const [selectedQuiz, setSelectedQuiz] = React.useState(null); 
 
   const navigate = useNavigate();
 
   const navigateToAnswerForm = (quiz) => {
     navigate(`/answer-form/${quiz.quizId}`, {
-      state: { quiz, flashcardSetId }  // Pass flashcardSetId here
+      state: { quiz, flashcardSetId }  
     });
   };
 
@@ -36,7 +36,7 @@ const QuizForm = () => {
   
   useEffect(() => {
     if (setId) {
-      setFlashcardSetId(setId); // Ensure the setId is set
+      setFlashcardSetId(setId); 
     }
   }, [setId]);
 
@@ -50,7 +50,7 @@ const QuizForm = () => {
   const handleCancelDeleteModal = () => setOpenDeleteModal(false);
 
   const handleOpenDeleteModal = (quiz) => {
-    setSelectedQuiz(quiz);  // Set the whole quiz object
+    setSelectedQuiz(quiz);  
     setOpenDeleteModal(true);
   };
   
@@ -65,17 +65,13 @@ const QuizForm = () => {
   const handleConfirmDelete = async () => {
     if (selectedQuiz && selectedQuiz.quizId) {
       try {
-        // Optimistically update the UI by removing the selected quiz
         setQuizzes((prevQuizzes) => prevQuizzes.filter((quiz) => quiz.quizId !== selectedQuiz.quizId));
-        
-        // Perform the deletion on the backend
+
         await handleDeleteQuiz(selectedQuiz.quizId);
-  
-        // Close the modal
+
         setOpenDeleteModal(false);
       } catch (error) {
         console.error('Error deleting quiz:', error);
-        // Optionally re-fetch quizzes or notify the user of the failure
         fetchQuizzes(); 
       }
     }
@@ -107,7 +103,7 @@ const QuizForm = () => {
   };
 
   useEffect(() => {
-    fetchFlashcardSets();  // Fetch flashcard sets when the component mounts
+    fetchFlashcardSets();  
     fetchQuizzes();
   }, []);
 
@@ -135,7 +131,7 @@ const QuizForm = () => {
 
   const handleQuestionScoreChange = (index, value) => {
     const newQuestions = [...questions];
-    newQuestions[index].score = Number(value);  // Use 'score' instead of 'questionScore'
+    newQuestions[index].score = Number(value);  
     setQuestions(newQuestions);
   };
 
@@ -143,7 +139,7 @@ const QuizForm = () => {
     e.preventDefault();
     const newQuiz = {
       title,
-      flashcardSet: { setId: flashcardSetId  },  // Include the selected flashcard set
+      flashcardSet: { setId: flashcardSetId  },  
       questions
     };
 
@@ -197,14 +193,14 @@ const QuizForm = () => {
   const handleEditQuiz = (quiz) => {
     setTitle(quiz.title);
     setQuestions(quiz.questions);
-    setFlashcardSetId(quiz.flashcardSet?.setId || ''); // Safely extract setId;
+    setFlashcardSetId(quiz.flashcardSet?.setId || ''); 
     setCurrentQuizId(quiz.quizId);
   };
 
   const handleDeleteQuiz = async (quizId) => {
     try {
       await axios.delete(`http://localhost:8080/api/quiz/deleteQuizDetails/${quizId}`);
-      fetchQuizzes();  // Refresh the list after deletion
+      fetchQuizzes();  
     } catch (error) {
       console.error('Error deleting quiz:', error);
     }

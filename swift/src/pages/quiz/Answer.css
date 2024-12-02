@@ -78,12 +78,12 @@
     margin-top: 20px;
   }
   .correct-option {
-    color: #4caf50; /* Green for correct answers */
+    color: #4caf50; 
     font-weight: bold;
   }
   
   .incorrect-option {
-    color: #f44336; /* Red for incorrect answers */
+    color: #f44336;
 
   }
   
