@@ -4,18 +4,15 @@ import AvatarTheme from '../../component/Theme';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Answer.css';
 import { Button } from '@mui/material';
+import axios from 'axios';
 
 const AnswerForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { quiz, flashcardSetId } = location.state; 
+  const { quiz, flashcardSetId } = location.state;
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [totalScore, setTotalScore] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
-  
-  console.log('Received Quiz:', quiz);
-  console.log('Received Flashcard Set ID:', flashcardSetId);
 
   useEffect(() => {
     if (quiz) {
@@ -29,7 +26,7 @@ const AnswerForm = () => {
     setSelectedAnswers(newAnswers);
   };
 
-  const handleSubmitAnswers = () => {
+  const handleSubmitAnswers = async () => {
     let score = 0;
 
     quiz.questions.forEach((question, index) => {
@@ -40,6 +37,15 @@ const AnswerForm = () => {
 
     setTotalScore(score);
     setIsSubmitted(true);
+
+    try {
+      await axios.post('http://localhost:8080/api/quiz/update-user-score', {
+        quizId: quiz.quizId,
+        userScore: score,
+      });
+    } catch (error) {
+      console.error('Error updating user score:', error);
+    }
   };
 
   if (!quiz) {
@@ -51,23 +57,21 @@ const AnswerForm = () => {
       <ResponsiveAppBar />
       <AvatarTheme />
       <div className="answer-form-container">
-        {/* Back to Quizzes Button */}
         <Button
           className="back-button"
-          onClick={() => navigate(`/quiz-form/${flashcardSetId}`)} // Change '/quizzes' to your quizzes list route
-          variant="contained"
-          color="secondary"
+          onClick={() => navigate(`/quiz-form/${flashcardSetId}`)}
+          variant="outlined"
         >
           Back to Quizzes
         </Button>
 
-        <div className="quiz-header">Answer Quiz: {quiz.title}</div>
+        <h1 className="quiz-header">Answer Quiz: {quiz.title}</h1>
         <div className="quiz-questions">
           {quiz.questions.map((question, questionIndex) => (
             <div key={questionIndex} className="quiz-question">
-              <div className="question-text">
+              <p className="question-text">
                 {questionIndex + 1}. {question.text}
-              </div>
+              </p>
               <div className="question-options">
                 {question.options.map((option, optionIndex) => {
                   const isCorrectAnswer = question.correctAnswerIndex === optionIndex;
@@ -107,7 +111,7 @@ const AnswerForm = () => {
         </div>
         {!isSubmitted ? (
           <Button
-            className="submit-button2"
+            className="submit-button"
             onClick={handleSubmitAnswers}
             variant="contained"
             color="primary"

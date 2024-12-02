@@ -295,26 +295,25 @@ const QuizForm = () => {
 
         <div className="quiz-header" style={{ marginTop: '20px' }}>Quizzes</div>
         <div className="quiz-list">
-  {quizzes.map((quiz) => (
-    <div key={quiz.quizId} className="quiz-item">
-      <div className="title">
-        <strong>Title:</strong> {quiz.title}
+        {quizzes.map((quiz) => (
+          <div key={quiz.quizId} className="quiz-item">
+            <div className="title">
+              <strong>Title:</strong> {quiz.title}
+            </div>
+            <div className="flashcard-set">
+              <strong>Flashcard Set:</strong> {quiz.flashcardSetTitle}
+            </div>
+            <div className="total-score">
+              <strong>Total Score:</strong> {quiz.userScore}/{quiz.totalScore}
+            </div>
+            <div className="quiz-actions">
+              <button onClick={() => handleOpenEditModal(quiz)}>Edit</button>
+              <button onClick={() => handleOpenDeleteModal(quiz)}>Delete</button>
+              <button onClick={() => navigateToAnswerForm(quiz)}>Answer Quiz</button>
+            </div>
+          </div>
+        ))}
       </div>
-      <div className="flashcard-set">
-        <strong>Flashcard Set:</strong> {quiz.flashcardSetTitle}
-      </div>
-      <div className="total-score">
-        <strong>Total Score:</strong> {quiz.totalScore}
-      </div>
-      <div className="quiz-actions">
-        <button onClick={() => handleOpenEditModal(quiz)}>Edit</button>
-        <button onClick={() => handleOpenDeleteModal(quiz)}>Delete</button>
-        <button onClick={() => navigateToAnswerForm(quiz)}>Answer Quiz</button> {/* New Button */}
-      </div>
-    </div>
-  ))}
-</div>
-
         {/* Edit Modal */}
         <Modal
           open={openEditModal}
