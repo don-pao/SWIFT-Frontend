@@ -89,6 +89,22 @@ const AdminDashboard = () => {
     buttonHover: {
       backgroundColor: '#7225f7',
     },
+    logoutButton: {
+      display: 'block',
+      margin: '20px auto',
+      backgroundColor: '#d32f2f', // Red color for logout button
+      color: '#fff',
+      border: 'none',
+      borderRadius: '4px',
+      padding: '10px 20px',
+      fontSize: '16px',
+      cursor: 'pointer',
+      textAlign: 'center',
+      transition: 'background-color 0.3s',
+    },
+    logoutButtonHover: {
+      backgroundColor: '#b71c1c', // Darker red for hover effect
+    },
   };
 
   return (
@@ -121,17 +137,17 @@ const AdminDashboard = () => {
         style={styles.button}
         onMouseOver={(e) => (e.target.style.backgroundColor = styles.buttonHover.backgroundColor)}
         onMouseOut={(e) => (e.target.style.backgroundColor = styles.button.backgroundColor)}
-        onClick={logout}
-      >
-        Logout
-      </button>
-      <button
-        style={styles.button}
-        onMouseOver={(e) => (e.target.style.backgroundColor = styles.buttonHover.backgroundColor)}
-        onMouseOut={(e) => (e.target.style.backgroundColor = styles.button.backgroundColor)}
         onClick={() => navigate('/shopadmin')}
       >
         Go to ShopAdmin
+      </button>
+      <button
+        style={styles.logoutButton}
+        onMouseOver={(e) => (e.target.style.backgroundColor = styles.logoutButtonHover.backgroundColor)}
+        onMouseOut={(e) => (e.target.style.backgroundColor = styles.logoutButton.backgroundColor)}
+        onClick={logout}
+      >
+        Logout
       </button>
     </div>
   );

@@ -57,13 +57,17 @@ const AnswerForm = () => {
       <ResponsiveAppBar />
       <AvatarTheme />
       <div className="answer-form-container">
-        <Button
-          className="back-button"
-          onClick={() => navigate(`/quiz-form/${flashcardSetId}`)}
-          variant="outlined"
-        >
-          Back to Quizzes
-        </Button>
+      <Button
+        className="back-button"
+        onClick={() => navigate(`/quiz-form/${flashcardSetId}`)}
+        variant="outlined"
+        style={{
+          color: '#73489c', // Text color
+          borderColor: '#73489c', // Outline color
+        }}
+      >
+        Back to Quizzes
+      </Button>
 
         <h1 className="quiz-header">Answer Quiz: {quiz.title}</h1>
         <div className="quiz-questions">
@@ -114,7 +118,13 @@ const AnswerForm = () => {
             className="submit-button"
             onClick={handleSubmitAnswers}
             variant="contained"
-            color="primary"
+            sx={{
+              backgroundColor: '#73489c',
+              color: '#ffffff',
+              '&:hover': {
+                backgroundColor: '#5d387a', // Slightly darker shade for hover effect
+              },
+            }}
           >
             Submit Answers
           </Button>
