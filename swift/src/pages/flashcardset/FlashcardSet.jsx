@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
-import { Modal, Box, Typography, Button } from '@mui/material';
+import { Modal, Box, Typography, Button, Menu, MenuItem } from '@mui/material';
 import './FlashcardSetForm.css'; // Import the CSS
 import { usePersonalInfo } from '../../context/PersonalInfoContext'; // Import the context hook
 
@@ -15,7 +15,7 @@ const FlashcardSetForm = () => {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedSet, setSelectedSet] = useState(null);
-  const [users, setUsers] = useState([]); // State for users (optional now if using context)
+  const [anchorEl, setAnchorEl] = useState(null); // Kebab menu anchor
   const navigate = useNavigate();
 
   // Access the user info from context
@@ -29,16 +29,6 @@ const FlashcardSetForm = () => {
       setFlashcardSets(response.data);
     } catch (error) {
       console.error('Error fetching flashcard sets for the current user:', error);
-    }
-  };
-
-  // Fetch users (optional if not using the select dropdown anymore)
-  const fetchUsers = async () => {
-    try {
-      const response = await axios.get('http://localhost:8080/api/user/get');
-      setUsers(response.data);
-    } catch (error) {
-      console.error('Error fetching users:', error);
     }
   };
 
@@ -132,68 +122,97 @@ const FlashcardSetForm = () => {
     navigate(`/quiz-form/${setId}`);
   };
 
+  const handleKebabMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleKebabMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <>
       <ResponsiveAppBar />
       <AvatarTheme />
       <div style={styles.container}>
-        <div className="flashcard-header">Add a Flashcard Set</div>
+        <div className="flashcard-header-container">
+          <div className="flashcard-header">Create a Flashcard Set</div>
+        </div>
+        
         <form onSubmit={handleSubmit} className="flashcard-form">
-  <div className="flashcard-input-container">
-    <label>Title:</label>
-    <input
-      type="text"
-      value={title}
-      onChange={(e) => setTitle(e.target.value)}
-      placeholder="Enter title"
-      required
-    />
-  </div>
-  <div className="flashcard-input-container">
-    <label>Description:</label>
-    <input
-      type="text"
-      value={description}
-      onChange={(e) => setDescription(e.target.value)}
-      placeholder="Enter description"
-      required
-    />
-  </div>
-  <div className="form-buttons">
-    <button type="submit" className="submit-button">
-      {currentSetId ? 'Update Flashcard Set' : 'Submit Flashcard Set'}
-    </button>
-    {currentSetId && (
-      <button
-        type="button"
-        className="cancel-button"
-        onClick={resetForm}
-        style={{ marginLeft: '10px' }}
-      >
-        Cancel
-      </button>
-    )}
-  </div>
-</form>
+          <div className="flashcard-input-container">
+            <label>Title:</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter title"
+              required
+            />
+          </div>
+          <div className="flashcard-input-container">
+            <label>Description:</label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add a description..."
+              required
+            />
+          </div>
+          <div className="form-buttons">
+            <button type="submit" className="submit-button">
+              {currentSetId ? 'Update Flashcard Set' : 'Submit Flashcard Set'}
+            </button>
+            {currentSetId && (
+              <button
+                type="button"
+                className="cancel-button"
+                onClick={resetForm}
+                style={{ marginLeft: '10px' }}
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        </form>
 
         <div className="flashcard-header" style={{ marginTop: '20px' }}>Flashcard Sets</div>
+
+        {/* Display a notice if there are no flashcard sets */}
         <div className="flashcard-list">
-          {flashcardSets.map((flashcardSet) => (
-            <div key={flashcardSet.setId} className="flashcard-item">
-              <div className="title">
-                <strong>Title:</strong> {flashcardSet.title}
-              </div>
-              <div className="description">
-                <strong>Description:</strong> {flashcardSet.description}
-              </div>
-              <div className="flashcard-actions">
-                <button onClick={() => handleEditFlashcardSet(flashcardSet)}>Edit</button>
-                <button onClick={() => handleDeleteFlashcardSet(flashcardSet.setId)}>Delete</button>
-                <button onClick={() => handleAddFlashcard(flashcardSet.setId)}>Add A Flashcard</button>
-                <button onClick={() => handleAddQuiz(flashcardSet.setId)}>Add A Quiz</button>
-              </div>
+          {flashcardSets.length === 0 ? (
+            <div className="no-flashcards-message">
+              <p>No Flashcard Sets Available</p>
             </div>
-          ))}
+          ) : (
+            flashcardSets.map((flashcardSet) => (
+              <div key={flashcardSet.setId} className="flashcard-item">
+                
+                <div className="flashcard-details">
+                    <div className="title">
+                      <strong>Title:</strong> {flashcardSet.title}
+                    </div>
+                    <div className="description">
+                      <strong>Description:</strong> {flashcardSet.description}
+                    </div>
+                  </div>
+                <div className="flashcard-actions">
+                  {/* Review button inside the actions section */}
+                  <button className="review-button" onClick={() => navigate(`/review/${flashcardSet.setId}`)}>
+                    Review
+                  </button>
+
+                  <div className="action-buttons">
+                    <button onClick={() => handleAddFlashcard(flashcardSet.setId)}>Add A Flashcard</button>
+                    <button onClick={() => handleAddQuiz(flashcardSet.setId)}>Add A Quiz</button>
+                    <button onClick={() => handleEditFlashcardSet(flashcardSet)}>Edit</button>
+                    <button onClick={() => handleDeleteFlashcardSet(flashcardSet.setId)}>Delete</button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Edit Modal */}
@@ -242,6 +261,7 @@ const FlashcardSetForm = () => {
   );
 };
 
+// Add styles for the Review button
 const styles = {
   container: {
     width: '80%',
