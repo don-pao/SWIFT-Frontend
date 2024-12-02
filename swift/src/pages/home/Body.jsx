@@ -33,6 +33,11 @@ function Body() {
     }
   }, [personalInfo?.userId]);
 
+  // Handle clicking a flashcard set to navigate to the review page
+  const handleFlashcardClick = (setId) => {
+    navigate(`/review/${setId}`);
+  };
+
   return (
     <Box display="flex" justifyContent="space-between" sx={{ padding: '20px', height: '100%', backgroundColor: theme.pageBackground, // Dynamic background
       transition: 'background-color 0.3s ease' }}>
@@ -77,11 +82,6 @@ function Body() {
           >
             Add a Flashcard
           </Button>
-
-          <Typography variant="h6" sx={{ marginBottom: '15px', fontWeight: 'bold', color: '#34313A' }}>
-            Flashcard Sets
-          </Typography>
-
           <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
             {flashcardSets.length > 0 ? (
               flashcardSets.map((flashcardSet) => (
@@ -99,9 +99,12 @@ function Body() {
                     boxShadow: '0px 1px 5px rgba(0, 0, 0, 0.1)',
                     transition: 'transform 0.2s',
                     '&:hover': {
-                      transform: 'scale(1.02)',
+                      boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+                      cursor: 'pointer', // Indicate it's clickable
+                      borderBottom: '4px solid #A8B1FF',
                     },
                   }}
+                  onClick={() => handleFlashcardClick(flashcardSet.setId)} // Navigate on click
                 >
                   {/* Metadata Section */}
                   <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
@@ -111,8 +114,7 @@ function Body() {
                     <Typography variant="body2" sx={{ color: '#757575', marginTop: '5px' }}>
                       {flashcardSet.description || 'No description available.'}
                     </Typography>
-                    <Typography variant="caption" sx={{ marginTop: '5px', color: '#999' }}>
-                    </Typography>
+                    <Typography variant="caption" sx={{ marginTop: '5px', color: '#999' }}></Typography>
                   </Box>
 
                   {/* Edit Button */}
@@ -131,7 +133,7 @@ function Body() {
                         backgroundColor: '#f9f9f9',
                       },
                     }}
-                    onClick={() => navigate(`/flashcard-set-form/`)} // Navigate with setId
+                    onClick={() => navigate(`/flashcard-set-form/${flashcardSet.setId}`)} // Navigate to edit form with setId
                   >
                     Edit
                   </Button>

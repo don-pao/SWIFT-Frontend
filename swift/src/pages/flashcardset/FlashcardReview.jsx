@@ -7,11 +7,11 @@ import ResponsiveAppBar from '../../component/Appbar';
 import AvatarTheme from '../../component/Theme';
 
 const FlashcardReview = () => {
-  const { setId } = useParams();  // Get the setId from the URL
+  const { setId } = useParams(); // Get the setId from the URL
   const [flashcards, setFlashcards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showTerm, setShowTerm] = useState(false);  // Set this to false to show definition first
-  
+  const [showTerm, setShowTerm] = useState(false); // Set this to false to show definition first
+
   // Create a navigate function to navigate back
   const navigate = useNavigate();
 
@@ -37,7 +37,7 @@ const FlashcardReview = () => {
   };
 
   const toggleTermDefinition = () => {
-    setShowTerm(!showTerm);  // Toggle between term and definition
+    setShowTerm(!showTerm); // Toggle between term and definition
   };
 
   // Display loading message if flashcards are not fetched yet
@@ -51,39 +51,48 @@ const FlashcardReview = () => {
     <>
       <ResponsiveAppBar />
       <AvatarTheme />
-      <div className="review-container">
-        {/* Back Button */}
+
+      {/* Outer wrapper for positioning */}
+      <div className="flashcard-review-wrapper">
+        {/* Back Button - Positioned at the top right */}
         <Button 
-          onClick={() => navigate('/flashcard-set-form')}  // Replace with the correct route
-          className="nav-button"
-        >
-          Return
-        </Button>
-        
-        <div className="flashcard-box">
-          <div className="flashcard-term-definition">
-            <Typography variant="h6">
-              {showTerm ? 'Term' : 'Definition'}
+            onClick={() => navigate('/flashcard-set-form')} 
+            className="back-button"
+          >
+            Return
+          </Button>
+          {/* Counter - Positioned at the top center */}
+          <Typography variant="h6" className="flashcard-counter">
+              {currentIndex + 1}/{flashcards.length}
+            </Typography>
+        <div className="review-container">
+
+          <div className="flashcard-box">
+
+            <div className="flashcard-term-definition">
+              <Typography variant="h6">
+                {showTerm ? 'Term' : 'Definition'}
+              </Typography>
+            </div>
+
+            <Typography variant="h4" className="flashcard-content">
+              {showTerm ? currentFlashcard.term : currentFlashcard.definition}
             </Typography>
           </div>
 
-          <Typography variant="h4" className="flashcard-content">
-            {showTerm ? currentFlashcard.term : currentFlashcard.definition}
-          </Typography>
-        </div>
+          <div className="controls">
+            <Button onClick={handlePrevious} variant="contained" color="primary" className="nav-button">
+              Previous
+            </Button>
 
-        <div className="controls">
-          <Button onClick={handlePrevious} variant="contained" color="primary" className="nav-button">
-            Previous
-          </Button>
+            <Button onClick={toggleTermDefinition} variant="contained" color="secondary">
+              {showTerm ? 'Show Definition' : 'Show Term'}
+            </Button>
 
-          <Button onClick={toggleTermDefinition} variant="contained" color="secondary">
-            {showTerm ? 'Show Definition' : 'Show Term'}
-          </Button>
-
-          <Button onClick={handleNext} variant="contained" color="primary" className="nav-button">
-            Next
-          </Button>
+            <Button onClick={handleNext} variant="contained" color="primary" className="nav-button">
+              Next
+            </Button>
+          </div>
         </div>
       </div>
     </>
