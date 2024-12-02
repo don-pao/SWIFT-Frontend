@@ -13,16 +13,6 @@ import { usePersonalInfo } from '../../context/PersonalInfoContext';
 function InventoryUI() {
     const { personalInfo } = usePersonalInfo();
     const [purchasedItems, setPurchasedItems] = useState([]);
-    const [themeUrl, setThemeUrl] = useState(
-        `${process.env.PUBLIC_URL}/images/themes/theme.png`
-    );
-
-    useEffect(() => {
-        const savedThemeUrl = localStorage.getItem('themeUrl');
-        if (savedThemeUrl) {
-            setThemeUrl(savedThemeUrl);
-        }
-    }, []);
 
     useEffect(() => {
         if (personalInfo?.userId) {
@@ -57,21 +47,22 @@ function InventoryUI() {
     };
 
     const handleCardClick = (itemUrl) => {
-        const fullUrl = `${process.env.PUBLIC_URL}/images/themes/${itemUrl}?t=${new Date().getTime()}`;
-        localStorage.setItem('themeUrl', fullUrl); // Save the theme globally
-        window.location.reload(); // Ensure all pages update
+        if (personalInfo?.userId) {
+            const userSpecificThemeKey = `themeUrl_${personalInfo.userId}`;
+            const fullUrl = `${process.env.PUBLIC_URL}/images/themes/${itemUrl}?t=${new Date().getTime()}`;
+            localStorage.setItem(userSpecificThemeKey, fullUrl);
+            window.location.reload();
+        }
     };
-    
 
     const handleReset = () => {
-        setThemeUrl(`${process.env.PUBLIC_URL}/images/themes/theme.png`);
-        localStorage.removeItem('themeUrl');
+        // This method is now handled in the AvatarTheme component
     };
 
     return (
         <Box display="flex" flexDirection="column" alignItems="center" className="App">
             <ResponsiveAppBar />
-            <AvatarTheme themeUrl={themeUrl} handleReset={handleReset} />
+            <AvatarTheme handleReset={handleReset} />
             <Box textAlign="center" mt={4} width="100%">
                 <h2>My Inventory</h2>
                 <Box sx={{ maxWidth: '100%', mx: 'auto', px: 10 }}>

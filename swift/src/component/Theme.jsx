@@ -1,19 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { usePersonalInfo } from '../context/PersonalInfoContext';
 
 function AvatarTheme({ handleReset }) {
+    const { personalInfo } = usePersonalInfo();
     const defaultThemeUrl = `${process.env.PUBLIC_URL}/images/themes/theme.png`;
     const [themeUrl, setThemeUrl] = useState(defaultThemeUrl);
 
-    // Load the theme from localStorage on mount
+    // Load the theme from localStorage on mount, user-specific
     useEffect(() => {
-        const savedThemeUrl = localStorage.getItem('themeUrl') || defaultThemeUrl;
-        setThemeUrl(savedThemeUrl);
-    }, []);
+        if (personalInfo?.userId) {
+            const userSpecificThemeKey = `themeUrl_${personalInfo.userId}`;
+            const savedThemeUrl = localStorage.getItem(userSpecificThemeKey) || defaultThemeUrl;
+            setThemeUrl(savedThemeUrl);
+        }
+    }, [personalInfo]);
 
     const resetTheme = () => {
-        setThemeUrl(defaultThemeUrl);
-        localStorage.removeItem('themeUrl');
-        if (handleReset) handleReset(); // Notify parent component if necessary
+        if (personalInfo?.userId) {
+            const userSpecificThemeKey = `themeUrl_${personalInfo.userId}`;
+            setThemeUrl(defaultThemeUrl);
+            localStorage.removeItem(userSpecificThemeKey);
+            if (handleReset) handleReset();
+        }
     };
 
     return (
@@ -27,7 +35,7 @@ function AvatarTheme({ handleReset }) {
                     objectFit: 'cover',
                     cursor: 'pointer',
                 }}
-                onClick={resetTheme} // Reset on click
+                onClick={resetTheme}
                 title="Click to reset to the default theme"
             />
         </div>
