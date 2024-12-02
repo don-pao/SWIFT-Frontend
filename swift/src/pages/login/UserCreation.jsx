@@ -242,8 +242,13 @@ const UserCreation = () => {
             </div>
           ) : (
             <div style={formContentStyle}>
+              <img 
+                src="/images/themes/SWIFT_logo.png" // Update with the correct path to your logo
+                alt="Logo"
+                style={{ width: "100px" }} // Adjust width and spacing as needed
+              />
               <h2>Sign In</h2>
-              <p>or use your email and password</p>
+              <p>Please use your email and password</p>
               {error && <p style={{ color: 'red' }}>{error}</p>}
               {success && <p style={{ color: 'green' }}>{success}</p>}
               <form style={formStyle} onSubmit={handleSubmit}>
@@ -290,6 +295,11 @@ const UserCreation = () => {
         <div style={panelStyle("right")}>
           {isRegistering ? (
             <div style={formContentStyle}>
+              <img 
+                src="/images/themes/SWIFT_logo.png" // Update with the correct path to your logo
+                alt="Logo"
+                style={{ width: "100px" }} // Adjust width and spacing as needed
+              />
               <h2>Welcome new user</h2>
               <p>Register with your personal details to use all site features.</p>
               <p>Already have an account?</p>

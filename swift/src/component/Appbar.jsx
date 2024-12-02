@@ -78,9 +78,13 @@ function ResponsiveAppBar() {
     <AppBar position="static" sx={{ backgroundColor: '#432874' }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <IconButton component={Link} to="/" sx={{ color: 'inherit' }}>
-            <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
-          </IconButton>
+        <IconButton component={Link} to="/home" sx={{ color: 'inherit' }}>
+          <img 
+            src="/images/themes/SWIFT_logo.png" 
+            alt="SWIFT Logo" 
+            style={{ height: '40px', display: 'block' }} 
+          />
+        </IconButton>
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
               size="large"
