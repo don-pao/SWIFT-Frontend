@@ -2,6 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Box, Button, Typography } from '@mui/material';
 import { userService } from '../login/userService';
 import { useNavigate } from 'react-router-dom';
+import { Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const UserProfile = () => {
   const [user, setUser] = useState(null);
@@ -28,6 +40,9 @@ const UserProfile = () => {
    const [isConfirm, setIsConfirm] = useState(false);
    const [onConfirm, setOnConfirm] = useState(null); // Store confirm callback
 
+  const [quizScores, setQuizScores] = useState([]);
+  const [averageScore, setAverageScore] = useState(0);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,6 +56,7 @@ const UserProfile = () => {
       setUser(currentUser);
       setUsername(currentUser.username);
       setEmail(currentUser.email);
+      fetchQuizData(currentUser.userId);
       setOriginalValues({
         username: currentUser.username,
         email: currentUser.email,
@@ -48,6 +64,78 @@ const UserProfile = () => {
       console.log("Username set to:", currentUser.username); // Log username
       console.log("Email set to:", currentUser.email); // Log email
     }
+  };
+
+  // Fetch quiz data and average score
+  const fetchQuizData = async (userId) => {
+    try {
+      const quizResponse = await fetch(`http://localhost:8080/api/quiz/getQuizzesByUserId/${userId}`);
+      
+      // Check if the response is JSON
+      if (quizResponse.ok && quizResponse.headers.get("Content-Type").includes("application/json")) {
+        const quizzes = await quizResponse.json();
+        setQuizScores(quizzes);
+      } else {
+        const errorText = await quizResponse.text();
+        console.error("Received non-JSON response:", errorText);
+      }
+      
+      const averageResponse = await fetch(`http://localhost:8080/api/quiz/getAverageScoreByUserId/${userId}`);
+      if (averageResponse.ok && averageResponse.headers.get("Content-Type").includes("application/json")) {
+        const average = await averageResponse.json();
+        setAverageScore(average);
+      } else {
+        const errorText = await averageResponse.text();
+        console.error("Received non-JSON response:", errorText);
+      }
+  
+    } catch (error) {
+      console.error('Error fetching quiz data:', error);
+    }
+  };
+  
+
+  // Prepare data for the chart
+  const chartData = {
+    labels: quizScores.map(quiz => quiz.title), // Quiz titles on the x-axis
+    datasets: [
+      {
+        label: 'Quiz Scores',
+        data: quizScores.map(quiz => quiz.userScore), // User scores on the y-axis
+        fill: false,
+        borderColor: '#512da8',
+        tension: 0.1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Quiz Scores',
+      },
+    },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Quiz Titles',
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Scores',
+        },
+        min: 0,
+        max: 100,
+      },
+    },
   };
 
   const openModal = (message, isConfirm = false, confirmCallback = null) => {
@@ -200,6 +288,17 @@ const UserProfile = () => {
     <div style={styles.pageContainer}>
       <div style={styles.profileContainer}>
         <h2 style={styles.profileTitle}>User Profile</h2>
+
+        {/* Display quiz scores in a line chart */}
+        <div style={{ marginBottom: '30px' }}>
+          <Line data={chartData} options={chartOptions} />
+        </div>
+
+        {/* Display average score */}
+        <div style={{ marginBottom: '20px' }}>
+          <h2>Average Score: {averageScore.toFixed(2)}%</h2><br></br>
+        </div>
+
         <form onSubmit={handleUpdate}>
           <div style={styles.profileItem}>
             <label style={styles.profileLabel}>Username</label>
