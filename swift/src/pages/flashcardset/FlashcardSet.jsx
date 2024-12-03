@@ -122,14 +122,6 @@ const FlashcardSetForm = () => {
     navigate(`/quiz-form/${setId}`);
   };
 
-  const handleKebabMenuClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleKebabMenuClose = () => {
-    setAnchorEl(null);
-  };
-
   return (
     <>
       <ResponsiveAppBar />
