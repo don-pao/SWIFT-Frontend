@@ -100,7 +100,6 @@ const AdminLoginAndRegister = () => {
     try {
       if (isRegistering) {
         await axios.post("http://localhost:8080/api/admin/register", formData);
-        alert("Admin registered successfully!");
         setIsRegistering(false);
         setFormData({ adminUsername: "", adminPassword: "", adminEmail: "" });
       } else {
