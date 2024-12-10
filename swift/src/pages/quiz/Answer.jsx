@@ -9,7 +9,7 @@ import axios from 'axios';
 const AnswerForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { quiz, flashcardSetId } = location.state;
+  const { quiz, flashcardSetId, userId  } = location.state;
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [totalScore, setTotalScore] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -59,7 +59,7 @@ const AnswerForm = () => {
       <div className="answer-form-container">
       <Button
         className="back-button"
-        onClick={() => navigate(`/quiz-form/${flashcardSetId}`)}
+        onClick={() => navigate(`/quiz-form/${userId}`)}
         variant="outlined"
         style={{
           color: '#73489c', 
