@@ -504,7 +504,6 @@ const UserProfile = () => {
 const styles = {
   pageContainer: {
     minHeight: '20vh',
-    background: 'linear-gradient(135deg, #e8eaf6, #f3e5f5)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
