@@ -16,6 +16,7 @@ const UserCreation = () => {
   const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false); // State for password visibility
   const [isEmailValid, setIsEmailValid] = useState(true); // New state for email validation
+  const [isUsernameValid, setIsUsernameValid] = useState(true); // New state for username validation
 
   const toggleForm = () => {
     setIsRegistering(!isRegistering);
@@ -60,6 +61,22 @@ const UserCreation = () => {
         setError('Could not verify email. Please try again.');
       }
     }
+
+    // Check username uniqueness
+    if (name === 'username' && isRegistering) {
+      try {
+        const usernameExists = await userService.usernameExists(value);
+        setIsUsernameValid(!usernameExists);
+        if (usernameExists) {
+          setError('Username already in use.');
+        } else {
+          setError('');
+        }
+      } catch (err) {
+        console.error('Error checking username uniqueness:', err.message);
+        setError('Could not verify username. Please try again.');
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -72,6 +89,10 @@ const UserCreation = () => {
         // Check email validity before registration
         if (!isEmailValid) {
           setError('Please use a different email.');
+          return;
+        }
+        if (!isUsernameValid) {
+          setError('Please use a different username.');
           return;
         }
         if (!validatePassword(formData.password)) {
